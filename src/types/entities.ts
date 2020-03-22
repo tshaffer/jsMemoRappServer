@@ -4,3 +4,7 @@ export interface UserEntity {
   email: string;
 }
 
+export interface TagEntity {
+  value: string;
+}
+

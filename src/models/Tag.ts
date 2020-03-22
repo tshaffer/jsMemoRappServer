@@ -4,9 +4,8 @@ const Schema = mongoose.Schema;
 
 const TagSchema = new Schema(
   {
-    type: { type: String, required: true },             // type is 'Restaurant Type' or 'Food Item', etc.
-    value: { type: String, required: true },            // value is 'Italian' or 'Pizza', etc,
+    value: { type: String, required: true },            // anything
   },
 );
 
-export default mongoose.model('User', TagSchema);
+export default mongoose.model('Tag', TagSchema);
