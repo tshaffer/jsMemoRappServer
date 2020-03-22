@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { Document } from 'mongoose';
-
 import { TagEntity } from '../types';
 import {
   createTagDocument,
@@ -22,15 +21,15 @@ export function createTag(request: Request, response: Response, next: any) {
     value,
   };
   createTagDocument(tagEntity)
-    .then((userDoc) => {
-      const userDocument = userDoc as Document;
+    .then((tagDoc) => {
+      const tagDocument = tagDoc as Document;
       console.log('added userDocument');
-      console.log(userDocument);
-      console.log(userDocument.toObject());
+      console.log(tagDocument);
+      console.log(tagDocument.toObject());
 
       response.status(201).json({
         success: true,
-        data: userDocument,
+        data: tagDocument,
       });
     });
 }

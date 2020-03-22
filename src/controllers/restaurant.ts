@@ -1,25 +1,46 @@
 import { Request, Response } from 'express';
+import { Document } from 'mongoose';
 import Restaurant from '../models/Restaurant';
+import { RestaurantEntity } from '../types/entities';
+import { createRestaurantDocument } from './dbInterface';
 
 // RESTAURANTS
 /*  POST
     {{URL}}/api/v1/restaurant
     Body
     {
-      "name": "La Costeña",
-      "category": "Burritos"
+      "restaurantName": "La Costeña",
+      "yelpBusinessDetails": [],
+      "tags": [
+        "taqueria",
+        "burritos",
+        "carnitas"
+      ]
     }
 */
 export function createRestaurant(request: Request, response: Response, next: any) {
   console.log('createRestaurant');
   console.log(request.body);
 
-  Restaurant.create(request.body).then((restaurant: any) => {
-    response.status(201).json({
-      success: true,
-      data: restaurant,
+  const { restaurantName, yelpBusinessDetails, tags } = request.body;
+  const restaurantEntity: RestaurantEntity = {
+    restaurantName,
+    yelpBusinessDetails,
+    tags,
+    userReviews: [],
+  };
+  createRestaurantDocument(restaurantEntity)
+    .then((restaurantDoc) => {
+      const restaurantDocument = restaurantDoc as Document;
+      console.log('added restaurantDocument');
+      console.log(restaurantDocument);
+      console.log(restaurantDocument.toObject());
+
+      response.status(201).json({
+        success: true,
+        data: restaurantDocument,
+      });
     });
-  });
 }
 
 /*  PATCH

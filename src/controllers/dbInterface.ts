@@ -2,7 +2,7 @@ import { Document } from 'mongoose';
 import Tag from '../models/Tag';
 import User from '../models/User';
 
-import { UserEntity, TagEntity } from '../types/entities';
+import { UserEntity, TagEntity, RestaurantEntity } from '../types/entities';
 
 export const createUserDocuments = (userDocuments: UserEntity[]): Promise<Document[]> => {
   return new Promise((resolve: any, reject: any) => {
@@ -56,6 +56,13 @@ export const createTagDocument = (tagEntity: TagEntity): Promise<any> => {
   return Tag.create(tagEntity)
     .then((tag: Document) => {
       return Promise.resolve(tag);
+    });
+};
+
+export const createRestaurantDocument = (restaurantEntity: RestaurantEntity): Promise<any> => {
+  return User.create(restaurantEntity)
+    .then((user: Document) => {
+      return Promise.resolve(user);
     });
 };
 
