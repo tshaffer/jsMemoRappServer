@@ -1,12 +1,14 @@
+import { isNil } from 'lodash';
 import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 import Restaurant from '../models/Restaurant';
-import { 
-  RestaurantEntity, 
+import {
+  RestaurantEntity,
   RestaurantReviewEntity,
   RestaurantVisitReviewEntity,
- } from '../types/entities';
+} from '../types/entities';
 import { createRestaurantDocument } from './dbInterface';
+import { isNullOrUndefined } from 'util';
 
 // RESTAURANTS
 /*  POST
@@ -88,21 +90,40 @@ export function addRestaurantReview(request: Request, response: Response, next: 
       rating,
     };
 
-    const restaurantReviewEntity: RestaurantReviewEntity = {
-      userName,
-      userTags,
-      wouldReturn,
-      visitReviews: [restaurantVisitReviewEntity],
-    };
-    
-    // (restaurant.toObject() as RestaurantEntity).reviews.push(restaurantReviewEntity);
-    (restaurant as any).reviews.push(restaurantReviewEntity);
+    // find the reviews for this user
+    let matchedUserReviews: RestaurantReviewEntity = null;
+    for (const userReviewsAny of (restaurant as any).reviews) {
+      const userReviews: RestaurantReviewEntity = userReviewsAny as RestaurantReviewEntity;
+      if (userReviews.userName === userName) {
+        matchedUserReviews = userReviews;
+        break;
+      }
+    }
+    if (isNil(matchedUserReviews)) {
+      matchedUserReviews = {
+        userName,
+        wouldReturn,
+        userTags,
+        visitReviews: [restaurantVisitReviewEntity],
+      };
+      (restaurant as any).reviews.push(matchedUserReviews);
+    } else {
+      matchedUserReviews.wouldReturn = wouldReturn;
+      // userTags?
+      matchedUserReviews.visitReviews.push(restaurantVisitReviewEntity);
+    }
 
-    // restaurant.save();
-    // response.json(restaurant);
-    response.json( {
-      ok: true,
-    });
+    // const restaurantReviewEntity: RestaurantReviewEntity = {
+    //   userName,
+    //   userTags,
+    //   wouldReturn,
+    //   visitReviews: [restaurantVisitReviewEntity],
+    // };
+
+    // (restaurant as any).reviews.push(restaurantReviewEntity);
+
+    restaurant.save();
+    response.json(restaurant);
   });
 
 }
