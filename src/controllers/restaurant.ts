@@ -4,11 +4,10 @@ import { Document } from 'mongoose';
 import Restaurant from '../models/Restaurant';
 import {
   RestaurantEntity,
-  RestaurantReviewEntity,
-  RestaurantVisitReviewEntity,
+  UserReviewsEntity,
+  VisitReviewEntity,
 } from '../types/entities';
 import { createRestaurantDocument } from './dbInterface';
-import { isNullOrUndefined } from 'util';
 
 // RESTAURANTS
 /*  POST
@@ -33,7 +32,7 @@ export function createRestaurant(request: Request, response: Response, next: any
     restaurantName,
     yelpBusinessDetails,
     tags,
-    reviews: [],
+    usersReviews: [],
   };
   createRestaurantDocument(restaurantEntity)
     .then((restaurantDoc) => {
@@ -84,47 +83,37 @@ export function addRestaurantReview(request: Request, response: Response, next: 
     const { comments, date, rating, userName, userTags, wouldReturn } = request.body;
     const jsDate = new Date(date);
 
-    const restaurantVisitReviewEntity: RestaurantVisitReviewEntity = {
+    const visitReviewEntity: VisitReviewEntity = {
       date: jsDate,
       comments,
       rating,
     };
 
     // find the reviews for this user
-    let matchedUserReviews: RestaurantReviewEntity = null;
-    for (const userReviewsAny of (restaurant as any).reviews) {
-      const userReviews: RestaurantReviewEntity = userReviewsAny as RestaurantReviewEntity;
+    let userReviewsForUser: UserReviewsEntity = null;
+    for (const userReviewsAny of (restaurant as any).usersReviews) {
+      const userReviews: UserReviewsEntity = userReviewsAny as UserReviewsEntity;
       if (userReviews.userName === userName) {
-        matchedUserReviews = userReviews;
+        userReviewsForUser = userReviews;
         break;
       }
     }
-    if (isNil(matchedUserReviews)) {
-      matchedUserReviews = {
+    if (isNil(userReviewsForUser)) {
+      userReviewsForUser = {
         userName,
         wouldReturn,
         userTags,
-        visitReviews: [restaurantVisitReviewEntity],
+        visitReviews: [visitReviewEntity],
       };
-      (restaurant as any).reviews.push(matchedUserReviews);
+      (restaurant as any).usersReviews.push(userReviewsForUser);
     } else {
-      matchedUserReviews.wouldReturn = wouldReturn;
+      userReviewsForUser.wouldReturn = wouldReturn;
       // userTags?
-      matchedUserReviews.visitReviews.push(restaurantVisitReviewEntity);
+      userReviewsForUser.visitReviews.push(visitReviewEntity);
     }
-
-    // const restaurantReviewEntity: RestaurantReviewEntity = {
-    //   userName,
-    //   userTags,
-    //   wouldReturn,
-    //   visitReviews: [restaurantVisitReviewEntity],
-    // };
-
-    // (restaurant as any).reviews.push(restaurantReviewEntity);
 
     restaurant.save();
     response.json(restaurant);
   });
-
 }
 
