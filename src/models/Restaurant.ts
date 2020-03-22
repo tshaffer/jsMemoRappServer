@@ -10,11 +10,11 @@ const RestaurantSchema = new Schema(
 
     tags: [{ type: String }],
 
-    userReviews: [{
+    reviews: [{
       userName: { type: String, required: true },
       wouldReturn: { type: Boolean },
       userTags: [{ type: String }],
-      userVisitReviews: [{
+      visitReviews: [{
         date: { type: Date, default: Date.now, required: true },
         comments: { type: String, required: true },
         rating: { type: Number },

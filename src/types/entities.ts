@@ -8,11 +8,22 @@ export interface TagEntity {
   value: string;
 }
 
-// export interface UserReviewEntity {}
+export interface RestaurantVisitReviewEntity {
+  date: Date;
+  comments: string;
+  rating: number;
+}
+
+export interface RestaurantReviewEntity {
+  userName: string;
+  wouldReturn: boolean;
+  userTags: string[];
+  visitReviews: RestaurantVisitReviewEntity[];
+}
 
 export interface RestaurantEntity {
   restaurantName: string;
   yelpBusinessDetails: any;
   tags: TagEntity[];
-  userReviews: any[];
+  reviews: RestaurantReviewEntity[];
 }

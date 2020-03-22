@@ -3,6 +3,7 @@ import Tag from '../models/Tag';
 import User from '../models/User';
 
 import { UserEntity, TagEntity, RestaurantEntity } from '../types/entities';
+import Restaurant from '../models/Restaurant';
 
 export const createUserDocuments = (userDocuments: UserEntity[]): Promise<Document[]> => {
   return new Promise((resolve: any, reject: any) => {
@@ -60,9 +61,9 @@ export const createTagDocument = (tagEntity: TagEntity): Promise<any> => {
 };
 
 export const createRestaurantDocument = (restaurantEntity: RestaurantEntity): Promise<any> => {
-  return User.create(restaurantEntity)
-    .then((user: Document) => {
-      return Promise.resolve(user);
+  return Restaurant.create(restaurantEntity)
+    .then((restaurant: Document) => {
+      return Promise.resolve(restaurant);
     });
 };
 
