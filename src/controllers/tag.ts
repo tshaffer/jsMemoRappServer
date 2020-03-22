@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 import { TagEntity } from '../types';
 import {
-  createTagDocument,
+  createTagDocument, createTagDocuments,
 } from './dbInterface';
 
 // tag
@@ -23,13 +23,34 @@ export function createTag(request: Request, response: Response, next: any) {
   createTagDocument(tagEntity)
     .then((tagDoc) => {
       const tagDocument = tagDoc as Document;
-      console.log('added userDocument');
+      console.log('added tagDocument');
       console.log(tagDocument);
       console.log(tagDocument.toObject());
 
       response.status(201).json({
         success: true,
         data: tagDocument,
+      });
+    });
+}
+
+export function createTags(request: Request, response: Response, next: any) {
+  console.log('createTags');
+  console.log(request.body);
+  const tagEntities: TagEntity[] = request.body.values.map((tagValue: string) => {
+    const tagEntity: TagEntity = { value: tagValue };
+    return tagEntity;
+  });
+
+  createTagDocuments(tagEntities)
+    .then((tagDocs) => {
+      const tagDocuments = tagDocs as Document[];
+      console.log('added tagDocuments');
+      console.log(tagDocuments);
+
+      response.status(201).json({
+        success: true,
+        data: tagDocuments,
       });
     });
 }
