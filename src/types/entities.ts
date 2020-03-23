@@ -25,5 +25,6 @@ export interface RestaurantEntity {
   restaurantName: string;
   yelpBusinessDetails: any;
   tags: TagEntity[];
-  usersReviews: UserReviewsEntity[];
+  // usersReviews: UserReviewsEntity[];
+  reviewsByUser: any;
 }

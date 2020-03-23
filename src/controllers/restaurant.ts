@@ -32,7 +32,8 @@ export function createRestaurant(request: Request, response: Response, next: any
     restaurantName,
     yelpBusinessDetails,
     tags,
-    usersReviews: [],
+    // usersReviews: [], 
+    reviewsByUser: {},
   };
   createRestaurantDocument(restaurantEntity)
     .then((restaurantDoc) => {
@@ -89,29 +90,32 @@ export function addRestaurantReview(request: Request, response: Response, next: 
       rating,
     };
 
+    let userReviewsByUser: UserReviewsEntity = null;
+
     // find the reviews for this user
-    let userReviewsForUser: UserReviewsEntity = null;
-    for (const userReviewsAny of (restaurant as any).usersReviews) {
-      const userReviews: UserReviewsEntity = userReviewsAny as UserReviewsEntity;
-      if (userReviews.userName === userName) {
-        userReviewsForUser = userReviews;
-        break;
-      }
-    }
-    if (isNil(userReviewsForUser)) {
-      userReviewsForUser = {
+    const reviewsByUser: any = (restaurant as any).reviewsByUser;
+    const reviewsBySingleUser = reviewsByUser.get(userName);
+    if (!isNil(reviewsBySingleUser)) {
+      const foo = reviewsBySingleUser.toObject();
+      const myFoo = foo[0];
+      myFoo.visitReviews.push(visitReviewEntity);
+      const newVisitReviews = reviewsBySingleUser.visitReviews.push(visitReviewEntity);
+      userReviewsByUser = {
+        userName,
+        wouldReturn,
+        userTags,
+        visitReviews: newVisitReviews,
+      };
+      (restaurant as any).reviewsByUser.set(userName, userReviewsByUser);
+    } else {
+      userReviewsByUser = {
         userName,
         wouldReturn,
         userTags,
         visitReviews: [visitReviewEntity],
       };
-      (restaurant as any).usersReviews.push(userReviewsForUser);
-    } else {
-      userReviewsForUser.wouldReturn = wouldReturn;
-      // userTags?
-      userReviewsForUser.visitReviews.push(visitReviewEntity);
+      (restaurant as any).reviewsByUser.set(userName, userReviewsByUser);
     }
-
     restaurant.save();
     response.json(restaurant);
   });

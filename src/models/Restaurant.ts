@@ -10,17 +10,35 @@ const RestaurantSchema = new Schema(
 
     tags: [{ type: String }],
 
-    usersReviews: [{
-      userName: { type: String, required: true },
-      wouldReturn: { type: Boolean },
-      userTags: [{ type: String }],
-      visitReviews: [{
-        date: { type: Date, default: Date.now, required: true },
-        comments: { type: String, required: true },
-        rating: { type: Number },
+    // reviewsByUser: {
+    //   type: Map,
+    //   of: Schema.Types.Mixed,
+    // },
+    reviewsByUser: {
+      type: Map,
+      of: [{
+        userName: { type: String, required: true },
+        wouldReturn: { type: Boolean },
+        userTags: [{ type: String }],
+        visitReviews: [{
+          date: { type: Date, default: Date.now, required: true },
+          comments: { type: String },
+          rating: { type: Number },
+        }],
+        // overallReview - calculated as average of individual reviews during query
       }],
-      // overallReview - calculated as average of individual reviews during query
-    }],
+    },
+    // usersReviews: [{
+    //   userName: { type: String, required: true },
+    //   wouldReturn: { type: Boolean },
+    //   userTags: [{ type: String }],
+    //   visitReviews: [{
+    //     date: { type: Date, default: Date.now, required: true },
+    //     comments: { type: String },
+    //     rating: { type: Number },
+    //   }],
+    //   // overallReview - calculated as average of individual reviews during query
+    // }],
   },
 );
 
