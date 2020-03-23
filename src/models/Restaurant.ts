@@ -9,36 +9,19 @@ const RestaurantSchema = new Schema(
     yelpBusinessDetails: { type: Schema.Types.Mixed },    // Details associated with this restaurant
 
     tags: [{ type: String }],
-
-    // reviewsByUser: {
-    //   type: Map,
-    //   of: Schema.Types.Mixed,
-    // },
+    
+    // export interface ReviewsByUsersMap {
+    //   [userName: string]: UserReviewsEntity;
+    // }
+    // export interface UserReviewsEntity {
+    //   userName: string;
+    //   wouldReturn: boolean;
+    //   userTags: string[];
+    //   visitReviews: VisitReviewEntity[];
+    // }
     reviewsByUser: { type: Schema.Types.Mixed },
-      // type: Map,
-      // of: [{
-      //   userName: { type: String, required: true },
-      //   wouldReturn: { type: Boolean },
-      //   userTags: [{ type: String }],
-      //   visitReviews: [{
-      //     date: { type: Date, default: Date.now, required: true },
-      //     comments: { type: String },
-      //     rating: { type: Number },
-      //   }],
-      // }],
-    // },
-    // usersReviews: [{
-    //   userName: { type: String, required: true },
-    //   wouldReturn: { type: Boolean },
-    //   userTags: [{ type: String }],
-    //   visitReviews: [{
-    //     date: { type: Date, default: Date.now, required: true },
-    //     comments: { type: String },
-    //     rating: { type: Number },
-    //   }],
-    //   // overallReview - calculated as average of individual reviews during query
-    // }],
   },
+  { minimize: false },
 );
 
 export default mongoose.model('Restaurant', RestaurantSchema);

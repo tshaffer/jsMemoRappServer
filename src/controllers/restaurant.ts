@@ -32,7 +32,6 @@ export function createRestaurant(request: Request, response: Response, next: any
     restaurantName,
     yelpBusinessDetails,
     tags,
-    // usersReviews: [], 
     reviewsByUser: {},
   };
   createRestaurantDocument(restaurantEntity)
@@ -81,6 +80,11 @@ export function addRestaurantReview(request: Request, response: Response, next: 
     console.log(restaurant);
     console.log(restaurant.toObject());
 
+    const restaurantEntity: RestaurantEntity = restaurant as unknown as RestaurantEntity;
+    console.log(restaurantEntity.restaurantName);
+    console.log(restaurantEntity.yelpBusinessDetails);
+    console.log(restaurantEntity.reviewsByUser);
+    
     const { comments, date, rating, userName, userTags, wouldReturn } = request.body;
     const jsDate = new Date(date);
 
@@ -93,7 +97,8 @@ export function addRestaurantReview(request: Request, response: Response, next: 
     let userReviewsByUser: UserReviewsEntity = null;
 
     // find the reviews for this user
-    const reviewsByUser: any = (restaurant as any).reviewsByUser;
+    // const reviewsByUser: any = (restaurant as any).reviewsByUser;
+    const reviewsByUser: any = restaurantEntity.reviewsByUser;
     if (reviewsByUser.hasOwnProperty(userName)) {
       userReviewsByUser = reviewsByUser[userName];
       userReviewsByUser.wouldReturn = wouldReturn;
@@ -112,30 +117,6 @@ export function addRestaurantReview(request: Request, response: Response, next: 
     restaurant.save();
     response.json(restaurant);
 
-    // const reviewsBySingleUser = reviewsByUser.get(userName);
-    // if (!isNil(reviewsBySingleUser)) {
-    //   const foo = reviewsBySingleUser.toObject();
-    //   const myFoo = foo[0];
-    //   myFoo.visitReviews.push(visitReviewEntity);
-    //   const newVisitReviews = reviewsBySingleUser.visitReviews.push(visitReviewEntity);
-    //   userReviewsByUser = {
-    //     userName,
-    //     wouldReturn,
-    //     userTags,
-    //     visitReviews: newVisitReviews,
-    //   };
-    //   (restaurant as any).reviewsByUser.set(userName, userReviewsByUser);
-    // } else {
-    //   userReviewsByUser = {
-    //     userName,
-    //     wouldReturn,
-    //     userTags,
-    //     visitReviews: [visitReviewEntity],
-    //   };
-    //   (restaurant as any).reviewsByUser.set(userName, userReviewsByUser);
-    // }
-    // restaurant.save();
-    // response.json(restaurant);
   });
 }
 

@@ -21,10 +21,13 @@ export interface UserReviewsEntity {
   visitReviews: VisitReviewEntity[];
 }
 
+export interface ReviewsByUsersMap {
+  [userName: string]: UserReviewsEntity;
+}
+
 export interface RestaurantEntity {
   restaurantName: string;
   yelpBusinessDetails: any;
   tags: TagEntity[];
-  // usersReviews: UserReviewsEntity[];
-  reviewsByUser: any;
+  reviewsByUser: ReviewsByUsersMap;
 }
