@@ -24,8 +24,6 @@ import { createRestaurantDocument } from './dbInterface';
     }
 */
 export function createRestaurant(request: Request, response: Response, next: any) {
-  console.log('createRestaurant');
-  console.log(request.body);
 
   const { restaurantName, yelpBusinessDetails, tags } = request.body;
   const restaurantEntity: RestaurantEntity = {
@@ -37,10 +35,6 @@ export function createRestaurant(request: Request, response: Response, next: any
   createRestaurantDocument(restaurantEntity)
     .then((restaurantDoc) => {
       const restaurantDocument = restaurantDoc as Document;
-      console.log('added restaurantDocument');
-      console.log(restaurantDocument);
-      console.log(restaurantDocument.toObject());
-
       response.status(201).json({
         success: true,
         data: restaurantDocument,
@@ -77,14 +71,8 @@ export function addRestaurantReview(request: Request, response: Response, next: 
     if (request.body._id) {
       delete request.body._id;
     }
-    console.log(restaurant);
-    console.log(restaurant.toObject());
 
     const restaurantEntity: RestaurantEntity = restaurant as unknown as RestaurantEntity;
-    console.log(restaurantEntity.restaurantName);
-    console.log(restaurantEntity.yelpBusinessDetails);
-    console.log(restaurantEntity.reviewsByUser);
-    
     const { comments, date, rating, userName, userTags, wouldReturn } = request.body;
     const jsDate = new Date(date);
 
