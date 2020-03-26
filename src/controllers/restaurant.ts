@@ -8,6 +8,7 @@ import {
   VisitReviewEntity,
 } from '../types/entities';
 import { createRestaurantDocument } from './dbInterface';
+import { fetchYelpBusinessByLocation } from './yelp';
 
 // RESTAURANTS
 /*  POST
@@ -108,3 +109,14 @@ export function addRestaurantReview(request: Request, response: Response, next: 
   });
 }
 
+export function getYelpRestaurants(request: Request, response: Response, next: any) {
+  const latitude: number = parseFloat(request.query.latitude);
+  const longitude: number = parseFloat(request.query.longitude);
+
+  console.log('latitude: ', latitude);
+  console.log('longitude: ', longitude);
+
+  return fetchYelpBusinessByLocation(latitude, longitude, 50, 'distance', 'food').then((responseData: any) => {
+    response.json(responseData);
+  });
+}
