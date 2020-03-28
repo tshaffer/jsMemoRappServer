@@ -112,6 +112,7 @@ export function addRestaurantReview(request: Request, response: Response, next: 
 }
 
 /*
+    GET
     {{URL}}/api/v1/yelpRestaurants?latitude=37.378424&longitude=-122.117042
 */
 export function yelpRestaurants(request: Request, response: Response, next: any) {
@@ -186,6 +187,7 @@ export function getFilteredRestaurantsQuery(filterSpec: FilterSpec): any {
   const aggregateQuery: any[] = [];
   addQuerySpecIfNonNull(aggregateQuery, { $geoNear: geoNearSpec });
   addQuerySpecIfNonNull(aggregateQuery, { $match: firstMatchSpec });
+  addQuerySpecIfNonNull(aggregateQuery, { $project: firstProjectSpec });
 
   return aggregateQuery;
 
@@ -227,7 +229,7 @@ function getFirstMatchSpec(filterSpec: FilterSpec): any {
 
   if (filterSpec.hasOwnProperty('tags')) {
     const tagsMatchQuery = getTagsMatchSpecHelper(filterSpec.tags);
-    matchSpec.categoryNames = tagsMatchQuery;
+    matchSpec.tags = tagsMatchQuery;
   }
 
   // possibly add specs that need to check for existence of filter spec properties
