@@ -3,12 +3,12 @@ import {
   createRestaurant,
   updateRestaurant,
   addRestaurantReview,
-  getYelpRestaurants,
+  yelpRestaurants,
 } from '../controllers/restaurant';
 
 const restaurantsRouter = express.Router();
 
-restaurantsRouter.get('/yelpRestaurants', getYelpRestaurants);
+restaurantsRouter.get('/yelpRestaurants', yelpRestaurants);
 
 restaurantsRouter.post('/restaurant', createRestaurant);
 restaurantsRouter.post('/restaurantReview/:id', addRestaurantReview);

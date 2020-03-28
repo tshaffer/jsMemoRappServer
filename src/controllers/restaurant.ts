@@ -2,13 +2,15 @@ import { isNil } from 'lodash';
 import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 import Restaurant from '../models/Restaurant';
+import { createRestaurantDocument } from './dbInterface';
+import { fetchYelpBusinessByLocation } from './yelp';
 import {
   RestaurantEntity,
   UserReviewsEntity,
   VisitReviewEntity,
-} from '../types/entities';
-import { createRestaurantDocument } from './dbInterface';
-import { fetchYelpBusinessByLocation } from './yelp';
+  FilterSpec,
+  GeoLocationSpec,
+} from '../types';
 
 // RESTAURANTS
 /*  POST
@@ -109,7 +111,10 @@ export function addRestaurantReview(request: Request, response: Response, next: 
   });
 }
 
-export function getYelpRestaurants(request: Request, response: Response, next: any) {
+/*
+    {{URL}}/api/v1/yelpRestaurants?latitude=37.378424&longitude=-122.117042
+*/
+export function yelpRestaurants(request: Request, response: Response, next: any) {
   const latitude: number = parseFloat(request.query.latitude);
   const longitude: number = parseFloat(request.query.longitude);
 
@@ -120,3 +125,129 @@ export function getYelpRestaurants(request: Request, response: Response, next: a
     response.json(responseData);
   });
 }
+
+/*
+{{URL}}/api/v1/filteredRestaurants
+
+example bodies
+
+{
+  "filters": {
+    "tags": [ "carnitas" ],
+    "reviewers": ["Ted", "Joel"]
+  }
+}
+
+{
+	"filterSpec": {
+		"location": {
+			"coordinates": [ -122.147944, 37.392333  ],
+			"maxDistance": 40000
+		},
+		"tags": [ "burritos", "taqueria" ]
+	}
+}
+
+{
+	"filterSpec": {
+    "tags": [ "burritos" ],
+    "reviewers": ["Ted"]
+}
+
+also:
+- wouldReturn
+- visitReviews
+--    date
+--    rating
+- anything from yelpBusinessDetails?
+*/
+export function filteredRestaurants(request: Request, response: Response, next: any) {
+
+  const filteredRestaurantsQuery: any = getFilteredRestaurantsQuery(request.body.filterSpec);
+
+  Restaurant.aggregate(filteredRestaurantsQuery)
+  .exec((err, restaurants) => {
+    if (err) {
+      throw err;
+    }
+    response.status(201).json({
+      success: true,
+      restaurants,
+    });
+  });
+}
+
+export function getFilteredRestaurantsQuery(filterSpec: FilterSpec): any {
+
+  const geoNearSpec = getGeoNearSpec(filterSpec);
+  const firstMatchSpec = getFirstMatchSpec(filterSpec);
+  const firstProjectSpec = getFirstProjectSpec(filterSpec);
+
+  const aggregateQuery: any[] = [];
+  addQuerySpecIfNonNull(aggregateQuery, { $geoNear: geoNearSpec });
+  addQuerySpecIfNonNull(aggregateQuery, { $match: firstMatchSpec });
+
+  return aggregateQuery;
+
+}
+
+function addQuerySpecIfNonNull(aggregateQuery: any[], querySpec: any) {
+  if (!isNil(querySpec)) {
+    aggregateQuery.push(querySpec);
+  }
+}
+
+// PIPELINE SPEC BUILDERS
+
+function getGeoNearSpec(filterSpec: FilterSpec): any {
+
+  if (!isNil(filterSpec.location)) {
+    const geoLocationSpec: GeoLocationSpec = filterSpec.location;
+    return {
+      near: {
+        type: 'Point',
+        coordinates: geoLocationSpec.coordinates,
+      },
+      distanceField: 'dist.calculated',
+      maxDistance: geoLocationSpec.maxDistance,
+      includeLocs: 'dist.location',
+      spherical: true,
+    };
+  }
+
+  return null;
+}
+
+// {
+//   tags: { $in: ['burritos'] }
+// }
+function getFirstMatchSpec(filterSpec: FilterSpec): any {
+
+  const matchSpec: any = {};
+
+  if (filterSpec.hasOwnProperty('tags')) {
+    const tagsMatchQuery = getTagsMatchSpecHelper(filterSpec.tags);
+    matchSpec.categoryNames = tagsMatchQuery;
+  }
+
+  // possibly add specs that need to check for existence of filter spec properties
+
+  return matchSpec;
+}
+
+function getTagsMatchSpecHelper(tags: string[]): any {
+  const specifiedCategories: any = {};
+  specifiedCategories.$in = tags;
+  return specifiedCategories;
+}
+
+function getFirstProjectSpec(filterSpec: FilterSpec): any {
+
+  const projectSpec: any = {};
+
+  projectSpec.restaurantName = 1;
+  projectSpec._id = 0;
+
+  return projectSpec;
+}
+
