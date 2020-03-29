@@ -6,10 +6,9 @@ import { createRestaurantDocument } from './dbInterface';
 import { fetchYelpBusinessByLocation } from './yelp';
 import {
   RestaurantEntity,
-  UserReviewsEntity,
-  VisitReviewEntity,
   FilterSpec,
   GeoLocationSpec,
+  RestaurantReviewEntity,
 } from '../types';
 
 // RESTAURANTS
@@ -33,7 +32,7 @@ export function createRestaurant(request: Request, response: Response, next: any
     restaurantName,
     yelpBusinessDetails,
     tags,
-    reviewsByUser: {},
+    reviews: [],
   };
   createRestaurantDocument(restaurantEntity)
     .then((restaurantDoc) => {
@@ -79,35 +78,19 @@ export function addRestaurantReview(request: Request, response: Response, next: 
     const { comments, date, rating, userName, userTags, wouldReturn } = request.body;
     const jsDate = new Date(date);
 
-    const visitReviewEntity: VisitReviewEntity = {
+    const reviewEntity: RestaurantReviewEntity = {
+      userName,
       date: jsDate,
       comments,
       rating,
+      wouldReturn,
     };
 
-    let userReviewsByUser: UserReviewsEntity = null;
+    (restaurant as unknown as RestaurantEntity).reviews.push(reviewEntity);
 
-    // find the reviews for this user
-    // const reviewsByUser: any = (restaurant as any).reviewsByUser;
-    const reviewsByUser: any = restaurantEntity.reviewsByUser;
-    if (reviewsByUser.hasOwnProperty(userName)) {
-      userReviewsByUser = reviewsByUser[userName];
-      userReviewsByUser.wouldReturn = wouldReturn;
-      userReviewsByUser.visitReviews.push(visitReviewEntity);
-    }
-    else {
-      userReviewsByUser = {
-        userName,
-        wouldReturn,
-        userTags,
-        visitReviews: [visitReviewEntity],
-      };
-    }
-    reviewsByUser[userName] = userReviewsByUser;
-    restaurant.markModified('reviewsByUser');
+    // restaurant.markModified('reviewsByUser');
     restaurant.save();
     response.json(restaurant);
-
   });
 }
 
@@ -167,15 +150,15 @@ export function filteredRestaurants(request: Request, response: Response, next: 
   const filteredRestaurantsQuery: any = getFilteredRestaurantsQuery(request.body.filterSpec);
 
   Restaurant.aggregate(filteredRestaurantsQuery)
-  .exec((err, restaurants) => {
-    if (err) {
-      throw err;
-    }
-    response.status(201).json({
-      success: true,
-      restaurants,
+    .exec((err, restaurants) => {
+      if (err) {
+        throw err;
+      }
+      response.status(201).json({
+        success: true,
+        restaurants,
+      });
     });
-  });
 }
 
 export function getFilteredRestaurantsQuery(filterSpec: FilterSpec): any {

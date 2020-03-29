@@ -2,7 +2,7 @@ import { Document } from 'mongoose';
 import Tag from '../models/Tag';
 import User from '../models/User';
 
-import { UserEntity, TagEntity, RestaurantEntity } from '../types/entities';
+import { UserEntity, TagEntity, RestaurantEntity, RestaurantReviewEntity } from '../types/entities';
 import Restaurant from '../models/Restaurant';
 
 export const createUserDocuments = (userDocuments: UserEntity[]): Promise<Document[]> => {
@@ -52,7 +52,6 @@ export const createTagDocuments = (tagDocuments: TagEntity[]): Promise<Document[
   });
 };
 
-
 export const createTagDocument = (tagEntity: TagEntity): Promise<any> => {
   return Tag.create(tagEntity)
     .then((tag: Document) => {
@@ -67,3 +66,40 @@ export const createRestaurantDocument = (restaurantEntity: RestaurantEntity): Pr
     });
 };
 
+export const createRestaurantDocuments = (restaurantDocuments: RestaurantEntity[]): Promise<Document[]> => {
+  return new Promise((resolve: any, reject: any) => {
+    Restaurant.collection.insert(restaurantDocuments, (err, docs) => {
+      if (err) {
+        console.log(err);
+        if (err.code === 11000) {
+          console.log('createRestaurantDocuments: duplicate key error');
+          resolve([]);
+        } else {
+          reject(err);
+        }
+      }
+      else {
+        console.log(docs);
+        resolve(docs);
+      }
+    });
+  });
+};
+
+export const createRestaurantReviewDocuments = (yelpId: string, reviews: RestaurantReviewEntity[]): Promise<Document> => {
+  
+  const query = Restaurant.findOneAndUpdate(
+    { 'yelpBusinessDetails.id': yelpId },
+    { reviews },
+  );
+  
+  const promise: Promise<Document> = query.exec();
+  return promise
+    .then((restaurant: Document) => {
+      return Promise.resolve(restaurant);
+    }).catch( (err: any) => {
+      console.log(err);
+      debugger;
+      return Promise.reject(err);
+    });
+};

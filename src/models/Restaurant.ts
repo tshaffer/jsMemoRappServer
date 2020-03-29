@@ -10,16 +10,13 @@ const RestaurantSchema = new Schema(
 
     tags: [{ type: String }],
     
-    // export interface ReviewsByUsersMap {
-    //   [userName: string]: UserReviewsEntity;
-    // }
-    // export interface UserReviewsEntity {
-    //   userName: string;
-    //   wouldReturn: boolean;
-    //   userTags: string[];
-    //   visitReviews: VisitReviewEntity[];
-    // }
-    reviewsByUser: { type: Schema.Types.Mixed },
+    reviews: [{
+      userName: { type: String, required: true },
+      date: { type: Date, default: Date.now, required: true },
+      comments: { type: String, required: true },
+      rating: { type: Number, required: true },
+      wouldReturn: { type: Boolean },
+    }],
   },
   { minimize: false },
 );
