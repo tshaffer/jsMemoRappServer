@@ -1,3 +1,4 @@
+import { isNil } from 'lodash';
 import { Request, Response } from 'express';
 import Restaurant from '../models/Restaurant';
 import User from '../models/User';
@@ -38,7 +39,7 @@ const getAllYelpData = (yelpBusinessIds: string[]): Promise<any[]> => {
   const yelpBusinessDetails: any[] = [];
 
   const processNextYelpBusiness = (index: number): Promise<number[]> => {
-    console.log('processNextActivity, index: ' + index);
+    console.log('processNextYelpBusiness, index: ' + index);
 
     if (index >= yelpBusinessIds.length) {
       return Promise.resolve(yelpBusinessDetails);
@@ -48,6 +49,11 @@ const getAllYelpData = (yelpBusinessIds: string[]): Promise<any[]> => {
 
     return fetchYelpBusinessDetails(yelpBusinessId)
       .then((businessDetails: any) => {
+
+        if (!isNil(businessDetails.error)) {
+          debugger;
+        }
+
         yelpBusinessDetails.push(businessDetails);
         return processNextYelpBusiness(index + 1);
       });
