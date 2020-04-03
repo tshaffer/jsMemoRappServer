@@ -59,6 +59,18 @@ export const createTagDocument = (tagEntity: TagEntity): Promise<any> => {
     });
 };
 
+export function getTagsFromDb(): Promise<TagEntity[]> {
+  const query = Tag.find({});
+  const promise: Promise<Document[]> = query.exec();
+  return promise.then((tagDocuments: Document[]) => {
+    const tagEntities: TagEntity[] = tagDocuments.map((tagDocument: any) => {
+      return tagDocument.toObject();
+    });
+    return Promise.resolve(tagEntities);
+  });
+}
+
+
 export const createRestaurantDocument = (restaurantEntity: RestaurantEntity): Promise<any> => {
   return Restaurant.create(restaurantEntity)
     .then((restaurant: Document) => {

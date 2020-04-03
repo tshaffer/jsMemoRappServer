@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 import { TagEntity } from '../types';
 import {
-  createTagDocument, createTagDocuments,
+  createTagDocument, createTagDocuments, getTagsFromDb,
 } from './dbInterface';
 
 // tag
@@ -53,4 +53,14 @@ export function createTags(request: Request, response: Response, next: any) {
         data: tagDocuments,
       });
     });
+}
+
+/*
+    GET
+    {{URL}}/api/v1/tags
+*/
+export function getTags(request: Request, response: Response, next: any) {
+  return getTagsFromDb().then((responseData: any) => {
+    response.json(responseData);
+  });
 }
