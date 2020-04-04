@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 
 import { UserEntity } from '../types';
 import {
-  createUserDocument,
+  createUserDocument, getUser,
 } from './dbInterface';
 
 // users
@@ -65,3 +65,17 @@ export function updateUser(request: Request, response: Response, next: any) {
   });
 }
 
+/*
+    GET
+    {{URL}}/api/v1/validateUser
+      userName and password in the body
+*/
+export function validateUser(request: Request, response: Response, next: any) {
+  const { userName, password } = request.params;
+  return getUser(userName, password)
+    .then((responseData: any) => {
+      response.json(responseData);
+    }).catch((err: Error) => {
+      response.json(null);
+    });
+}

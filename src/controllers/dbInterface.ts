@@ -115,3 +115,15 @@ export const createRestaurantReviewDocuments = (yelpId: string, reviews: Restaur
       return Promise.reject(err);
     });
 };
+
+export const getUser = (userName: string, password: string): Promise<UserEntity> => {
+  const query = User.findOne({ userName, password });
+  const promise: Promise<Document> = query.exec();
+  return promise
+    .then((userDocument: Document) => {
+      const user: UserEntity = userDocument.toObject();
+      return Promise.resolve(user);
+    }).catch((err: Error) => {
+      return Promise.reject(err);
+    });
+}
