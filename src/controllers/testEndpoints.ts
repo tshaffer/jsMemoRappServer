@@ -96,7 +96,7 @@ export const populateRestaurants = () => {
       reviews: [],
     },
     {
-      restaurantName: 'State of Mind Public House & Pizzeria',
+      restaurantName: 'State Of Mind Public House & Pizzeria',
       yelpBusinessDetails: { id: 'a8gk25_MTKdtoOwBsiraDQ' },
       tags: [{ value: 'Pizza' }],
       reviews: [],
