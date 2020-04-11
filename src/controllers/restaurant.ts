@@ -98,7 +98,7 @@ export function addRestaurantReview(request: Request, response: Response, next: 
     GET
     {{URL}}/api/v1/yelpRestaurants?latitude=37.378424&longitude=-122.117042
 */
-export function yelpRestaurants(request: Request, response: Response, next: any) {
+export function yelpRestaurantsByLocation(request: Request, response: Response, next: any) {
   const latitude: number = parseFloat(request.query.latitude);
   const longitude: number = parseFloat(request.query.longitude);
 
@@ -108,6 +108,102 @@ export function yelpRestaurants(request: Request, response: Response, next: any)
   return fetchYelpBusinessByLocation(latitude, longitude, 50, 'distance', 'food').then((responseData: any) => {
     response.json(responseData);
   });
+}
+
+function getMemoRappRestaurantsByLocation(
+  latitude: number,
+  longitude: number,
+  radius: number,
+): Promise<any> {
+
+  console.log('latitude: ', latitude);
+  console.log('longitude: ', longitude);
+
+  const location: GeoLocationSpec = {
+    // coordinates: [latitude, longitude],
+    coordinates: [longitude, latitude],
+    maxDistance: radius,
+  };
+  const geoNearSpec = getGeoNearSpec(location);
+  // const aggregateQuery: any[] = [];
+  // addQuerySpecIfNonNull(aggregateQuery, { $geoNear: geoNearSpec });
+  const tmpQuery: any[] = [];
+  addQuerySpecIfNonNull(tmpQuery, { $geoNear: geoNearSpec });
+  console.log(tmpQuery);
+  console.log(geoNearSpec.near);
+
+  const aggregateQuery = [
+    {
+      '$geoNear': {
+        'near': {
+          'type': 'Point',
+          'coordinates': [
+            -122.061109, 37.397402
+          ]
+        },
+        'distanceField': 'dist.calculated',
+        'maxDistance': 10000,
+        'includeLocs': 'dist.location',
+        'spherical': true
+      }
+    }
+  ];
+  // console.log(aggregateQuery['$geoNear'].['near']);
+
+  // console.log(aggregateQuery);
+
+  /*
+  [
+    {
+      '$geoNear': {
+        'near': {
+          'type': 'Point', 
+          'coordinates': [
+            -122.061109, 37.397402
+          ]
+        }, 
+        'distanceField': 'dist.calculated', 
+        'maxDistance': 10000, 
+        'includeLocs': 'dist.location', 
+        'spherical': true
+      }
+    }
+  ]
+  */
+
+  return new Promise((resolve, reject) => {
+    Restaurant.aggregate(tmpQuery).exec((err, restaurants) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve({
+        restaurants,
+      });
+    });
+  });
+}
+
+export function restaurantsByLocation(request: Request, response: Response, next: any) {
+
+  const latitude: number = parseFloat(request.query.latitude);
+  const longitude: number = parseFloat(request.query.longitude);
+
+  let yelpRestaurantData: any = null;
+
+  return fetchYelpBusinessByLocation(latitude, longitude, 50, 'distance', 'food')
+    .then((restaurantData) => {
+      yelpRestaurantData = restaurantData;
+      console.log(yelpRestaurantData);
+      return getMemoRappRestaurantsByLocation(latitude, longitude, 10000).then((memoRappRestaurantData: any) => {
+        console.log(memoRappRestaurantData);
+      });
+    }).then((memoRappRestaurantData) => {
+      response.status(201).json({
+        success: true,
+        memoRappRestaurantData,
+        yelpRestaurantData,
+      });
+    });
 }
 
 /*
@@ -163,7 +259,7 @@ export function filteredRestaurants(request: Request, response: Response, next: 
 
 export function getFilteredRestaurantsQuery(filterSpec: FilterSpec): any {
 
-  const geoNearSpec = getGeoNearSpec(filterSpec);
+  const geoNearSpec = getGeoNearSpec(filterSpec.location);
   const firstMatchSpec = getFirstMatchSpec(filterSpec);
   const firstProjectSpec = getFirstProjectSpec(filterSpec);
 
@@ -184,17 +280,16 @@ function addQuerySpecIfNonNull(aggregateQuery: any[], querySpec: any) {
 
 // PIPELINE SPEC BUILDERS
 
-function getGeoNearSpec(filterSpec: FilterSpec): any {
+function getGeoNearSpec(locationSpec: GeoLocationSpec): any {
 
-  if (!isNil(filterSpec.location)) {
-    const geoLocationSpec: GeoLocationSpec = filterSpec.location;
+  if (!isNil(locationSpec)) {
     return {
       near: {
         type: 'Point',
-        coordinates: geoLocationSpec.coordinates,
+        coordinates: locationSpec.coordinates,
       },
       distanceField: 'dist.calculated',
-      maxDistance: geoLocationSpec.maxDistance,
+      maxDistance: locationSpec.maxDistance,
       includeLocs: 'dist.location',
       spherical: true,
     };
