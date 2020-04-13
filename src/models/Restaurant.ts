@@ -8,7 +8,9 @@ const RestaurantSchema = new Schema(
     restaurantName: { type: String, required: true },     // possibly duplicates yelp name
     yelpBusinessDetails: { type: Schema.Types.Mixed },    // Details associated with this restaurant
 
-    tags: [{ type: String }],
+    tags: [{ 
+      value: { type: String },
+    }],
     
     reviews: [{
       userName: { type: String, required: true },

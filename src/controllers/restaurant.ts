@@ -151,16 +151,17 @@ export function restaurantsByLocation(request: Request, response: Response, next
       yelpRestaurantData = restaurantData;
       console.log(yelpRestaurantData);
       return getMemoRappRestaurantsByLocation(latitude, longitude, 50)
-      .then((memoRappRestaurantData: any) => {
-        console.log(memoRappRestaurantData);
-        response.status(201).json({
-          success: true,
-          memoRappRestaurantData,
-          yelpRestaurantData,
+        .then((memoRappRestaurantData: any) => {
+          console.log(memoRappRestaurantData);
+          response.status(201).json({
+            success: true,
+            memoRappRestaurants: memoRappRestaurantData.restaurants,
+            yelpRestaurants: yelpRestaurantData.businesses,
+          });
         });
-      });
     });
-  }
+}
+
 
 /*
 {{URL}}/api/v1/filteredRestaurants
@@ -199,91 +200,91 @@ also:
 */
 export function filteredRestaurants(request: Request, response: Response, next: any) {
 
-    const filteredRestaurantsQuery: any = getFilteredRestaurantsQuery(request.body.filterSpec);
+  const filteredRestaurantsQuery: any = getFilteredRestaurantsQuery(request.body.filterSpec);
 
-    Restaurant.aggregate(filteredRestaurantsQuery)
-      .exec((err, restaurants) => {
-        if (err) {
-          throw err;
-        }
-        response.status(201).json({
-          success: true,
-          restaurants,
-        });
+  Restaurant.aggregate(filteredRestaurantsQuery)
+    .exec((err, restaurants) => {
+      if (err) {
+        throw err;
+      }
+      response.status(201).json({
+        success: true,
+        restaurants,
       });
+    });
+}
+
+export function getFilteredRestaurantsQuery(filterSpec: FilterSpec): any {
+
+  const geoNearSpec = getGeoNearSpec(filterSpec.location);
+  const firstMatchSpec = getFirstMatchSpec(filterSpec);
+  const firstProjectSpec = getFirstProjectSpec(filterSpec);
+
+  const aggregateQuery: any[] = [];
+  addQuerySpecIfNonNull(aggregateQuery, { $geoNear: geoNearSpec });
+  addQuerySpecIfNonNull(aggregateQuery, { $match: firstMatchSpec });
+  addQuerySpecIfNonNull(aggregateQuery, { $project: firstProjectSpec });
+
+  return aggregateQuery;
+
+}
+
+function addQuerySpecIfNonNull(aggregateQuery: any[], querySpec: any) {
+  if (!isNil(querySpec)) {
+    aggregateQuery.push(querySpec);
+  }
+}
+
+// PIPELINE SPEC BUILDERS
+
+function getGeoNearSpec(locationSpec: GeoLocationSpec): any {
+
+  if (!isNil(locationSpec)) {
+    return {
+      near: {
+        type: 'Point',
+        coordinates: locationSpec.coordinates,
+      },
+      distanceField: 'dist.calculated',
+      maxDistance: locationSpec.maxDistance,
+      includeLocs: 'dist.location',
+      spherical: true,
+    };
   }
 
-  export function getFilteredRestaurantsQuery(filterSpec: FilterSpec): any {
+  return null;
+}
 
-    const geoNearSpec = getGeoNearSpec(filterSpec.location);
-    const firstMatchSpec = getFirstMatchSpec(filterSpec);
-    const firstProjectSpec = getFirstProjectSpec(filterSpec);
+// {
+//   tags: { $in: ['burritos'] }
+// }
+function getFirstMatchSpec(filterSpec: FilterSpec): any {
 
-    const aggregateQuery: any[] = [];
-    addQuerySpecIfNonNull(aggregateQuery, { $geoNear: geoNearSpec });
-    addQuerySpecIfNonNull(aggregateQuery, { $match: firstMatchSpec });
-    addQuerySpecIfNonNull(aggregateQuery, { $project: firstProjectSpec });
+  const matchSpec: any = {};
 
-    return aggregateQuery;
-
+  if (filterSpec.hasOwnProperty('tags')) {
+    const tagsMatchQuery = getTagsMatchSpecHelper(filterSpec.tags);
+    matchSpec.tags = tagsMatchQuery;
   }
 
-  function addQuerySpecIfNonNull(aggregateQuery: any[], querySpec: any) {
-    if (!isNil(querySpec)) {
-      aggregateQuery.push(querySpec);
-    }
-  }
+  // possibly add specs that need to check for existence of filter spec properties
 
-  // PIPELINE SPEC BUILDERS
+  return matchSpec;
+}
 
-  function getGeoNearSpec(locationSpec: GeoLocationSpec): any {
+function getTagsMatchSpecHelper(tags: string[]): any {
+  const specifiedCategories: any = {};
+  specifiedCategories.$in = tags;
+  return specifiedCategories;
+}
 
-    if (!isNil(locationSpec)) {
-      return {
-        near: {
-          type: 'Point',
-          coordinates: locationSpec.coordinates,
-        },
-        distanceField: 'dist.calculated',
-        maxDistance: locationSpec.maxDistance,
-        includeLocs: 'dist.location',
-        spherical: true,
-      };
-    }
+function getFirstProjectSpec(filterSpec: FilterSpec): any {
 
-    return null;
-  }
+  const projectSpec: any = {};
 
-  // {
-  //   tags: { $in: ['burritos'] }
-  // }
-  function getFirstMatchSpec(filterSpec: FilterSpec): any {
+  projectSpec.restaurantName = 1;
+  projectSpec._id = 0;
 
-    const matchSpec: any = {};
-
-    if (filterSpec.hasOwnProperty('tags')) {
-      const tagsMatchQuery = getTagsMatchSpecHelper(filterSpec.tags);
-      matchSpec.tags = tagsMatchQuery;
-    }
-
-    // possibly add specs that need to check for existence of filter spec properties
-
-    return matchSpec;
-  }
-
-  function getTagsMatchSpecHelper(tags: string[]): any {
-    const specifiedCategories: any = {};
-    specifiedCategories.$in = tags;
-    return specifiedCategories;
-  }
-
-  function getFirstProjectSpec(filterSpec: FilterSpec): any {
-
-    const projectSpec: any = {};
-
-    projectSpec.restaurantName = 1;
-    projectSpec._id = 0;
-
-    return projectSpec;
-  }
+  return projectSpec;
+}
 
