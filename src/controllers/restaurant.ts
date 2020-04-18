@@ -27,9 +27,10 @@ import {
 */
 export function createRestaurant(request: Request, response: Response, next: any) {
 
-  const { restaurantName, yelpBusinessDetails, tags } = request.body;
+  const { id, name, yelpBusinessDetails, tags } = request.body;
   const restaurantEntity: RestaurantEntity = {
-    restaurantName,
+    id,
+    name,
     yelpBusinessDetails,
     tags,
     reviews: [],

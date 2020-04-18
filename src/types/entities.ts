@@ -17,7 +17,8 @@ export interface RestaurantReviewEntity {
 }
 
 export interface RestaurantEntity {
-  restaurantName: string;
+  id: string;
+  name: string;
   location?: GeoLocation;
   yelpBusinessDetails: any;
   tags: TagEntity[];

@@ -5,8 +5,10 @@ const Schema = mongoose.Schema;
 // https://stackoverflow.com/questions/29299477/how-to-create-and-use-enum-in-mongoose
 const RestaurantSchema = new Schema(
   {
-    restaurantName: { type: String, required: true },     // possibly duplicates yelp name
+    id: { type: String, required: true, unique: true },   // use yelpId as unique id
+    name: { type: String, required: true },               // possibly duplicates yelp name
     yelpBusinessDetails: { type: Schema.Types.Mixed },    // Details associated with this restaurant
+    location: { type: Schema.Types.Mixed},                // GeoLocation of restaurant
 
     tags: [{ 
       value: { type: String },
