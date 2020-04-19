@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { Document } from 'mongoose';
-import { TagEntity } from '../types';
 import {
   createTagDocument, createTagDocuments, getTagsFromDb,
 } from './dbInterface';
@@ -17,10 +16,9 @@ export function createTag(request: Request, response: Response, next: any) {
   console.log('createTag');
   console.log(request.body);
   const { value } = request.body;
-  const tagEntity: TagEntity = {
-    value,
-  };
-  createTagDocument(tagEntity)
+  const tag: string = value;
+  
+  createTagDocument(tag)
     .then((tagDoc) => {
       const tagDocument = tagDoc as Document;
       console.log('added tagDocument');
@@ -37,12 +35,11 @@ export function createTag(request: Request, response: Response, next: any) {
 export function createTags(request: Request, response: Response, next: any) {
   console.log('createTags');
   console.log(request.body);
-  const tagEntities: TagEntity[] = request.body.values.map((tagValue: string) => {
-    const tagEntity: TagEntity = { value: tagValue };
-    return tagEntity;
+  const tags: string[] = request.body.values.map((tagValue: string) => {
+    return tagValue;
   });
 
-  createTagDocuments(tagEntities)
+  createTagDocuments(tags)
     .then((tagDocs) => {
       const tagDocuments = tagDocs as Document[];
       console.log('added tagDocuments');

@@ -2,7 +2,12 @@ import { Document } from 'mongoose';
 import Tag from '../models/Tag';
 import User from '../models/User';
 
-import { UserEntity, TagEntity, RestaurantEntity, RestaurantReviewEntity } from '../types/entities';
+import {
+  UserEntity,
+  RestaurantEntity,
+  ReviewEntity,
+  UserReviewsEntity,
+} from '../types/entities';
 import Restaurant from '../models/Restaurant';
 
 export const createUserDocuments = (userDocuments: UserEntity[]): Promise<Document[]> => {
@@ -32,9 +37,21 @@ export const createUserDocument = (userEntity: UserEntity): Promise<any> => {
     });
 };
 
-export const createTagDocuments = (tagDocuments: TagEntity[]): Promise<Document[]> => {
+export const getUser = (userName: string, password: string): Promise<UserEntity> => {
+  const query = User.findOne({ userName, password });
+  const promise: Promise<Document> = query.exec();
+  return promise
+    .then((userDocument: Document) => {
+      const user: UserEntity = userDocument.toObject();
+      return Promise.resolve(user);
+    }).catch((err: Error) => {
+      return Promise.reject(err);
+    });
+};
+
+export const createTagDocuments = (tags: string[]): Promise<Document[]> => {
   return new Promise((resolve: any, reject: any) => {
-    Tag.collection.insert(tagDocuments, (err, docs) => {
+    Tag.collection.insert(tags, (err, docs) => {
       if (err) {
         console.log(err);
         if (err.code === 11000) {
@@ -52,24 +69,23 @@ export const createTagDocuments = (tagDocuments: TagEntity[]): Promise<Document[
   });
 };
 
-export const createTagDocument = (tagEntity: TagEntity): Promise<any> => {
-  return Tag.create(tagEntity)
-    .then((tag: Document) => {
-      return Promise.resolve(tag);
+export const createTagDocument = (tag: string): Promise<any> => {
+  return Tag.create(tag)
+    .then((tagDocument: Document) => {
+      return Promise.resolve(tagDocument);
     });
 };
 
-export function getTagsFromDb(): Promise<TagEntity[]> {
+export function getTagsFromDb(): Promise<string[]> {
   const query = Tag.find({});
   const promise: Promise<Document[]> = query.exec();
   return promise.then((tagDocuments: Document[]) => {
-    const tagEntities: TagEntity[] = tagDocuments.map((tagDocument: any) => {
+    const tags: string[] = tagDocuments.map((tagDocument: any) => {
       return tagDocument.toObject();
     });
-    return Promise.resolve(tagEntities);
+    return Promise.resolve(tags);
   });
 }
-
 
 export const createRestaurantDocument = (restaurantEntity: RestaurantEntity): Promise<any> => {
   return Restaurant.create(restaurantEntity)
@@ -98,32 +114,20 @@ export const createRestaurantDocuments = (restaurantDocuments: RestaurantEntity[
   });
 };
 
-export const createRestaurantReviewDocuments = (yelpId: string, reviews: RestaurantReviewEntity[]): Promise<Document> => {
+export const createRestaurantUsersReviewsDocuments = (yelpId: string, userReviews: UserReviewsEntity[]): Promise<Document> => {
   
   const query = Restaurant.findOneAndUpdate(
     { 'yelpBusinessDetails.id': yelpId },
-    { reviews },
+    { userReviews },
   );
-  
+
   const promise: Promise<Document> = query.exec();
   return promise
     .then((restaurant: Document) => {
       return Promise.resolve(restaurant);
-    }).catch( (err: any) => {
+    }).catch((err: any) => {
       console.log(err);
       debugger;
       return Promise.reject(err);
     });
 };
-
-export const getUser = (userName: string, password: string): Promise<UserEntity> => {
-  const query = User.findOne({ userName, password });
-  const promise: Promise<Document> = query.exec();
-  return promise
-    .then((userDocument: Document) => {
-      const user: UserEntity = userDocument.toObject();
-      return Promise.resolve(user);
-    }).catch((err: Error) => {
-      return Promise.reject(err);
-    });
-}

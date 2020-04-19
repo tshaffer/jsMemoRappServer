@@ -8,18 +8,18 @@ const RestaurantSchema = new Schema(
     id: { type: String, required: true, unique: true },   // use yelpId as unique id
     name: { type: String, required: true },               // possibly duplicates yelp name
     yelpBusinessDetails: { type: Schema.Types.Mixed },    // Details associated with this restaurant
-    location: { type: Schema.Types.Mixed},                // GeoLocation of restaurant
+    location: { type: Schema.Types.Mixed },                // GeoLocation of restaurant
 
-    tags: [{ 
-      value: { type: String },
-    }],
-    
-    reviews: [{
+    usersReviews: [{
       userName: { type: String, required: true },
-      date: { type: Date, default: Date.now, required: true },
-      comments: { type: String, required: true },
-      rating: { type: Number, required: true },
-      wouldReturn: { type: Boolean },
+      tags: [{ type: String }],
+      reviews: [{
+        userName: { type: String, required: true },
+        date: { type: Date, default: Date.now, required: true },
+        comments: { type: String, required: true },
+        rating: { type: Number, required: true },
+        wouldReturn: { type: Boolean },
+      }],
     }],
   },
   { minimize: false },

@@ -8,7 +8,7 @@ import {
   RestaurantEntity,
   FilterSpec,
   GeoLocationSpec,
-  RestaurantReviewEntity,
+  ReviewEntity,
 } from '../types';
 
 // RESTAURANTS
@@ -27,13 +27,12 @@ import {
 */
 export function createRestaurant(request: Request, response: Response, next: any) {
 
-  const { id, name, yelpBusinessDetails, tags } = request.body;
+  const { id, name, yelpBusinessDetails } = request.body;
   const restaurantEntity: RestaurantEntity = {
     id,
     name,
     yelpBusinessDetails,
-    tags,
-    reviews: [],
+    usersReviews: [],
   };
   createRestaurantDocument(restaurantEntity)
     .then((restaurantDoc) => {
@@ -69,31 +68,32 @@ export function updateRestaurant(request: Request, response: Response, next: any
   });
 }
 
-export function addRestaurantReview(request: Request, response: Response, next: any) {
-  Restaurant.findById(request.params.id, (err, restaurant) => {
-    if (request.body._id) {
-      delete request.body._id;
-    }
 
-    const restaurantEntity: RestaurantEntity = restaurant as unknown as RestaurantEntity;
-    const { comments, date, rating, userName, userTags, wouldReturn } = request.body;
-    const jsDate = new Date(date);
+// export function addRestaurantReview(request: Request, response: Response, next: any) {
+//   Restaurant.findById(request.params.id, (err, restaurant) => {
+//     if (request.body._id) {
+//       delete request.body._id;
+//     }
 
-    const reviewEntity: RestaurantReviewEntity = {
-      userName,
-      date: jsDate,
-      comments,
-      rating,
-      wouldReturn,
-    };
+//     const restaurantEntity: RestaurantEntity = restaurant as unknown as RestaurantEntity;
+//     const { comments, date, rating, userName, userTags, wouldReturn } = request.body;
+//     const jsDate = new Date(date);
 
-    (restaurant as unknown as RestaurantEntity).reviews.push(reviewEntity);
+//     const reviewEntity: ReviewEntity = {
+//       userName,
+//       date: jsDate,
+//       comments,
+//       rating,
+//       wouldReturn,
+//     };
 
-    // restaurant.markModified('reviewsByUser');
-    restaurant.save();
-    response.json(restaurant);
-  });
-}
+//     (restaurant as unknown as RestaurantEntity).reviews.push(reviewEntity);
+
+//     // restaurant.markModified('reviewsByUser');
+//     restaurant.save();
+//     response.json(restaurant);
+//   });
+// }
 
 /*
     GET

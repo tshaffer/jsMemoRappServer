@@ -2,7 +2,7 @@ import express from 'express';
 import { 
   createRestaurant,
   updateRestaurant,
-  addRestaurantReview,
+  // addRestaurantReview,
   yelpRestaurantsByLocation,
   filteredRestaurants,
   restaurantsByLocation,
@@ -16,7 +16,7 @@ restaurantsRouter.get('/restaurantsByLocation', restaurantsByLocation);
 restaurantsRouter.post('/filteredRestaurants', filteredRestaurants);
 
 restaurantsRouter.post('/restaurant', createRestaurant);
-restaurantsRouter.post('/restaurantReview/:id', addRestaurantReview);
+// restaurantsRouter.post('/restaurantReview/:id', addRestaurantReview);
 restaurantsRouter.patch('/restaurant/:id', updateRestaurant);
 
 restaurantsRouter.post('/populateDb', populateDb);
