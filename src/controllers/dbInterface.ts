@@ -3,6 +3,7 @@ import Tag from '../models/Tag';
 import User from '../models/User';
 
 import {
+  TagEntity,
   UserEntity,
   RestaurantEntity,
   ReviewEntity,
@@ -49,9 +50,9 @@ export const getUser = (userName: string, password: string): Promise<UserEntity>
     });
 };
 
-export const createTagDocuments = (tags: string[]): Promise<Document[]> => {
+export const createTagDocuments = (tagDocuments: TagEntity[]): Promise<Document[]> => {
   return new Promise((resolve: any, reject: any) => {
-    Tag.collection.insert(tags, (err, docs) => {
+    Tag.collection.insert(tagDocuments, (err, docs) => {
       if (err) {
         console.log(err);
         if (err.code === 11000) {
@@ -69,21 +70,21 @@ export const createTagDocuments = (tags: string[]): Promise<Document[]> => {
   });
 };
 
-export const createTagDocument = (tag: string): Promise<any> => {
-  return Tag.create(tag)
-    .then((tagDocument: Document) => {
-      return Promise.resolve(tagDocument);
+export const createTagDocument = (tagEntity: TagEntity): Promise<any> => {
+  return Tag.create(tagEntity)
+    .then((tag: Document) => {
+      return Promise.resolve(tag);
     });
 };
 
-export function getTagsFromDb(): Promise<string[]> {
+export function getTagsFromDb(): Promise<TagEntity[]> {
   const query = Tag.find({});
   const promise: Promise<Document[]> = query.exec();
   return promise.then((tagDocuments: Document[]) => {
-    const tags: string[] = tagDocuments.map((tagDocument: any) => {
+    const tagEntities: TagEntity[] = tagDocuments.map((tagDocument: any) => {
       return tagDocument.toObject();
     });
-    return Promise.resolve(tags);
+    return Promise.resolve(tagEntities);
   });
 }
 

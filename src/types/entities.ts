@@ -4,9 +4,9 @@ export interface UserEntity {
   email: string;
 }
 
-// export interface TagEntity {
-//   value: string;
-// }
+export interface TagEntity {
+  value: string;
+}
 
 export interface ReviewEntity {
   date: Date;
@@ -17,7 +17,7 @@ export interface ReviewEntity {
 
 export interface UserReviewsEntity {
   userName: string;
-  tags: string[];
+  tags: TagEntity[];
   reviews: ReviewEntity[];
 }
 

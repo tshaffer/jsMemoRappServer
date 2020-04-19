@@ -5,7 +5,7 @@ import User from '../models/User';
 import { fetchYelpBusinessDetails, fetchYelpBusinessByLocation } from './yelp';
 import { Document } from 'mongoose';
 
-import { UserEntity, RestaurantEntity } from '../types';
+import { TagEntity, UserEntity, RestaurantEntity } from '../types';
 import {
   createUserDocuments,
   createTagDocuments,
@@ -23,14 +23,14 @@ export const populateUsers = () => {
 };
 
 export const populateTags = () => {
-  const tagEntities: string[] = [
-    'Taqueria',
-    'Burritos',
-    'Pizza',
-    'Sandwiches',
-    'Meatball Sandwiches',
-    'Coffee',
-    'Pasta',
+  const tagEntities: TagEntity[] = [
+    { value: 'Taqueria' },
+    { value: 'Burritos' },
+    { value: 'Pizza' },
+    { value: 'Sandwiches' },
+    { value: 'Meatball Sandwiches' },
+    { value: 'Coffee' },
+    { value: 'Pasta' },
   ];
   return createTagDocuments(tagEntities);
 };
@@ -52,7 +52,8 @@ const getAllYelpData = (yelpBusinessIds: string[]): Promise<any[]> => {
       .then((businessDetails: any) => {
 
         if (!isNil(businessDetails.error)) {
-          debugger;
+          console.log('error at index: ', index);
+          processNextYelpBusiness(index);
         }
 
         yelpBusinessDetails.push(businessDetails);

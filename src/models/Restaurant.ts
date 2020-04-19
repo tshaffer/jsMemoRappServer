@@ -12,7 +12,9 @@ const RestaurantSchema = new Schema(
 
     usersReviews: [{
       userName: { type: String, required: true },
-      tags: [{ type: String }],
+      tags: [{ 
+        value: { type: String },
+      }],  
       reviews: [{
         userName: { type: String, required: true },
         date: { type: Date, default: Date.now, required: true },
