@@ -10,6 +10,7 @@ import {
   GeoLocationSpec,
   ReviewEntity,
   UserReviewsEntity,
+  TagEntity,
 } from '../types';
 
 // RESTAURANTS
@@ -93,6 +94,50 @@ export function addUserReview(request: Request, response: Response, next: any) {
   const { restaurantDbId, userName, tags, date, rating, wouldReturn, comments } = request.body;
 
   console.log(request.body);
+
+  Restaurant.findById(restaurantDbId, (err, restaurantDoc) => {
+
+    let matchedUsersReview: UserReviewsEntity = null;
+
+    // TEDTODO - 'any' blech
+    for (const usersReview of (restaurantDoc as any).usersReviews) {
+      if (usersReview.userName === userName) {
+        matchedUsersReview = usersReview;
+      }
+    }
+
+    const review: ReviewEntity = {
+      date,
+      comments,
+      rating,
+      wouldReturn,
+    };
+
+    const tagEntities: TagEntity[] = tags.map( (tag: string) => {
+      return {
+        value: tag,
+      };
+    });
+
+    if (!isNil(matchedUsersReview)) {
+      matchedUsersReview.tags = tagEntities;
+      matchedUsersReview.reviews.push(review);
+      // save it
+    }
+    else {
+      const userReviewEntity: UserReviewsEntity = {
+        userName,
+        tags: tagEntities,
+        reviews: [review],
+      };
+      (restaurantDoc as any).usersReviews.push(userReviewEntity);
+      // markModified?
+      restaurantDoc.save();
+    }
+    
+    response.json(restaurantDoc);
+
+  });
 
 }
 
