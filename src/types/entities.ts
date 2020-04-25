@@ -21,12 +21,20 @@ export interface UserReviewsEntity {
   reviews: ReviewEntity[];
 }
 
+export interface MemoRappLocation {
+  coordinates: {
+    latitude: number,
+    longitude: number,
+  };
+}
+
 export interface RestaurantEntity {
   id: string;
   name: string;
   yelpBusinessDetails: any;
   usersReviews: UserReviewsEntity[];
-  location?: GeoLocation;
+  // location?: GeoLocation;
+  location?: MemoRappLocation;
 }
 
 export interface GeoLocation {

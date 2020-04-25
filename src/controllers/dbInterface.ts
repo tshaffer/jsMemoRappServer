@@ -89,10 +89,16 @@ export function getTagsFromDb(): Promise<TagEntity[]> {
 }
 
 export const createRestaurantDocument = (restaurantEntity: RestaurantEntity): Promise<any> => {
+  console.log('createRestaurantDocument');
+
+  console.log(restaurantEntity);
+  
   return Restaurant.create(restaurantEntity)
     .then((restaurant: Document) => {
       return Promise.resolve(restaurant);
-    });
+    }).catch( (err: any) => {
+      console.log('ERROR - createRestaurantDocument: ', err);  
+});
 };
 
 export const createRestaurantDocuments = (restaurantDocuments: RestaurantEntity[]): Promise<Document[]> => {

@@ -29,13 +29,17 @@ import {
 */
 export function createRestaurant(request: Request, response: Response, next: any) {
 
+  console.log('createRestaurant');
+
   const { id, name, yelpBusinessDetails, location } = request.body;
   const restaurantEntity: RestaurantEntity = {
     id,
     name,
     yelpBusinessDetails,
     usersReviews: [],
-    location,
+    location: {
+      coordinates: location.coordinates,
+    },
   };
   createRestaurantDocument(restaurantEntity)
     .then((restaurantDoc) => {
@@ -44,6 +48,8 @@ export function createRestaurant(request: Request, response: Response, next: any
         success: true,
         data: restaurantDocument,
       });
+    }).catch( (err: any) => {
+      console.log('ERROR - createRestaurant: ', err);  
     });
 }
 
