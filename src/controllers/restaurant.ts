@@ -9,6 +9,7 @@ import {
   FilterSpec,
   GeoLocationSpec,
   ReviewEntity,
+  UserReviewsEntity,
 } from '../types';
 
 // RESTAURANTS
@@ -44,6 +45,25 @@ export function createRestaurant(request: Request, response: Response, next: any
     });
 }
 
+export function createUserReviews(request: Request, response: Response, next: any) {
+
+  const { id, userName, tags } = request.body;
+
+  Restaurant.findById(request.params.id, (err, restaurant) => {
+    if (request.body._id) {
+      delete request.body._id;
+    }
+    const userReviewsEntity: UserReviewsEntity = {
+      userName,
+      tags,
+      reviews: [],
+    };
+    (restaurant as any).usersReviews.push(userReviewsEntity);
+    restaurant.save();
+    response.json(restaurant);
+  });
+}
+
 /*  PATCH
     {{URL}}/api/v1/restaurant/<restaurant id>>
     {
@@ -68,6 +88,13 @@ export function updateRestaurant(request: Request, response: Response, next: any
   });
 }
 
+export function addUserReview(request: Request, response: Response, next: any) {
+  // const userName = request.params.userName;
+  // const { id, name, usersReviews } = request.body;
+
+  console.log(request.params);
+  console.log(request.body);
+}
 
 // export function addRestaurantReview(request: Request, response: Response, next: any) {
 //   Restaurant.findById(request.params.id, (err, restaurant) => {

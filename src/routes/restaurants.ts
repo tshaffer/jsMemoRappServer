@@ -1,6 +1,8 @@
 import express from 'express';
-import { 
+import {
+  addUserReview,
   createRestaurant,
+  createUserReviews,
   updateRestaurant,
   // addRestaurantReview,
   yelpRestaurantsByLocation,
@@ -16,6 +18,9 @@ restaurantsRouter.get('/restaurantsByLocation', restaurantsByLocation);
 restaurantsRouter.post('/filteredRestaurants', filteredRestaurants);
 
 restaurantsRouter.post('/restaurant', createRestaurant);
+// restaurantsRouter.post('restaurantReview/:restaurantId/userName/:userName', addUserReview);
+restaurantsRouter.post('/restaurantReview', addUserReview);
+restaurantsRouter.post('/userReviews/:id', createUserReviews);
 // restaurantsRouter.post('/restaurantReview/:id', addRestaurantReview);
 restaurantsRouter.patch('/restaurant/:id', updateRestaurant);
 
