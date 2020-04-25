@@ -89,11 +89,11 @@ export function updateRestaurant(request: Request, response: Response, next: any
 }
 
 export function addUserReview(request: Request, response: Response, next: any) {
-  // const userName = request.params.userName;
-  // const { id, name, usersReviews } = request.body;
 
-  console.log(request.params);
+  const { restaurantDbId, userName, tags, date, rating, wouldReturn, comments } = request.body;
+
   console.log(request.body);
+
 }
 
 // export function addRestaurantReview(request: Request, response: Response, next: any) {
