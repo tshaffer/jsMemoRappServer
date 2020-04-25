@@ -113,7 +113,7 @@ export function addUserReview(request: Request, response: Response, next: any) {
       wouldReturn,
     };
 
-    const tagEntities: TagEntity[] = tags.map( (tag: string) => {
+    const tagEntities: TagEntity[] = tags.map((tag: string) => {
       return {
         value: tag,
       };
@@ -122,7 +122,6 @@ export function addUserReview(request: Request, response: Response, next: any) {
     if (!isNil(matchedUsersReview)) {
       matchedUsersReview.tags = tagEntities;
       matchedUsersReview.reviews.push(review);
-      // save it
     }
     else {
       const userReviewEntity: UserReviewsEntity = {
@@ -131,10 +130,10 @@ export function addUserReview(request: Request, response: Response, next: any) {
         reviews: [review],
       };
       (restaurantDoc as any).usersReviews.push(userReviewEntity);
-      // markModified?
-      restaurantDoc.save();
     }
-    
+
+    // markModified?
+    restaurantDoc.save();
     response.json(restaurantDoc);
 
   });
