@@ -29,12 +29,13 @@ import {
 */
 export function createRestaurant(request: Request, response: Response, next: any) {
 
-  const { id, name, yelpBusinessDetails } = request.body;
+  const { id, name, yelpBusinessDetails, location } = request.body;
   const restaurantEntity: RestaurantEntity = {
     id,
     name,
     yelpBusinessDetails,
     usersReviews: [],
+    location,
   };
   createRestaurantDocument(restaurantEntity)
     .then((restaurantDoc) => {
@@ -113,20 +114,14 @@ export function addUserReview(request: Request, response: Response, next: any) {
       wouldReturn,
     };
 
-    const tagEntities: TagEntity[] = tags.map((tag: string) => {
-      return {
-        value: tag,
-      };
-    });
-
     if (!isNil(matchedUsersReview)) {
-      matchedUsersReview.tags = tagEntities;
+      matchedUsersReview.tags = tags;
       matchedUsersReview.reviews.push(review);
     }
     else {
       const userReviewEntity: UserReviewsEntity = {
         userName,
-        tags: tagEntities,
+        tags,
         reviews: [review],
       };
       (restaurantDoc as any).usersReviews.push(userReviewEntity);
