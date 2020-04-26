@@ -9,9 +9,14 @@ const RestaurantSchema = new Schema(
     name: { type: String, required: true },               // possibly duplicates yelp name
     yelpBusinessDetails: { type: Schema.Types.Mixed },    // Details associated with this restaurant
     location: {
+      type: {
+        type: String, // Don't do `{ location: { type: String } }`
+        enum: ['Point'], // 'location.type' must be 'Point'
+        required: true,
+      },
       coordinates: {
-        latitude: Number,
-        longitude: Number,
+        type: [Number],
+        required: true,
       },
     },
 

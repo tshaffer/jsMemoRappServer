@@ -10,7 +10,6 @@ import {
   GeoLocationSpec,
   ReviewEntity,
   UserReviewsEntity,
-  TagEntity,
 } from '../types';
 
 // RESTAURANTS
@@ -38,7 +37,8 @@ export function createRestaurant(request: Request, response: Response, next: any
     yelpBusinessDetails,
     usersReviews: [],
     location: {
-      coordinates: location.coordinates,
+      type: 'Point',
+      coordinates: [location.coordinates.longitude, location.coordinates.latitude],
     },
   };
   createRestaurantDocument(restaurantEntity)
