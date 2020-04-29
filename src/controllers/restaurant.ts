@@ -42,7 +42,7 @@ export function createRestaurant(request: Request, response: Response, next: any
     },
   };
   createRestaurantDocument(restaurantEntity)
-    .then((restaurantDoc) => {
+    .then((restaurantDoc: Document) => {
       const restaurantDocument = restaurantDoc as Document;
       response.status(201).json({
         success: true,
@@ -57,17 +57,19 @@ export function createUserReviews(request: Request, response: Response, next: an
 
   const { id, userName, tags } = request.body;
 
-  Restaurant.findById(request.params.id, (err, restaurant) => {
+  Restaurant.findById(request.params.id, (err, restaurant: RestaurantEntity) => {
     if (request.body._id) {
       delete request.body._id;
     }
+
     const userReviewsEntity: UserReviewsEntity = {
       userName,
       tags,
       reviews: [],
     };
-    (restaurant as any).usersReviews.push(userReviewsEntity);
-    restaurant.save();
+    restaurant.usersReviews.push(userReviewsEntity);
+
+    (restaurant as unknown as Document).save();
     response.json(restaurant);
   });
 }
@@ -102,12 +104,11 @@ export function addUserReview(request: Request, response: Response, next: any) {
 
   console.log(request.body);
 
-  Restaurant.findById(restaurantDbId, (err, restaurantDoc) => {
+  Restaurant.findById(restaurantDbId, (err, restaurant: RestaurantEntity) => {
 
     let matchedUsersReview: UserReviewsEntity = null;
 
-    // TEDTODO - 'any' blech
-    for (const usersReview of (restaurantDoc as any).usersReviews) {
+    for (const usersReview of restaurant.usersReviews) {
       if (usersReview.userName === userName) {
         matchedUsersReview = usersReview;
       }
@@ -130,42 +131,16 @@ export function addUserReview(request: Request, response: Response, next: any) {
         tags,
         reviews: [review],
       };
-      (restaurantDoc as any).usersReviews.push(userReviewEntity);
+      restaurant.usersReviews.push(userReviewEntity);
     }
 
     // markModified?
-    restaurantDoc.save();
-    response.json(restaurantDoc);
+    (restaurant as unknown as Document).save();
+    response.json(restaurant);
 
   });
 
 }
-
-// export function addRestaurantReview(request: Request, response: Response, next: any) {
-//   Restaurant.findById(request.params.id, (err, restaurant) => {
-//     if (request.body._id) {
-//       delete request.body._id;
-//     }
-
-//     const restaurantEntity: RestaurantEntity = restaurant as unknown as RestaurantEntity;
-//     const { comments, date, rating, userName, userTags, wouldReturn } = request.body;
-//     const jsDate = new Date(date);
-
-//     const reviewEntity: ReviewEntity = {
-//       userName,
-//       date: jsDate,
-//       comments,
-//       rating,
-//       wouldReturn,
-//     };
-
-//     (restaurant as unknown as RestaurantEntity).reviews.push(reviewEntity);
-
-//     // restaurant.markModified('reviewsByUser');
-//     restaurant.save();
-//     response.json(restaurant);
-//   });
-// }
 
 /*
     GET
