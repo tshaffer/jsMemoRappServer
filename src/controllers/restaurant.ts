@@ -3,7 +3,10 @@ import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 import Restaurant from '../models/Restaurant';
 import { createRestaurantDocument } from './dbInterface';
-import { fetchYelpBusinessByLocation } from './yelp';
+import {
+  fetchYelpBusinessByLocation,
+  fetchYelpBusinesses,
+} from './yelp';
 import {
   RestaurantEntity,
   FilterSpec,
@@ -48,8 +51,8 @@ export function createRestaurant(request: Request, response: Response, next: any
         success: true,
         data: restaurantDocument,
       });
-    }).catch( (err: any) => {
-      console.log('ERROR - createRestaurant: ', err);  
+    }).catch((err: any) => {
+      console.log('ERROR - createRestaurant: ', err);
     });
 }
 
@@ -210,6 +213,42 @@ export function restaurantsByLocation(request: Request, response: Response, next
     });
 }
 
+export function restaurantsSearch(request: Request, response: Response, next: any) {
+
+  console.log(request.body);
+
+  const longitude: number = request.body.coordinates.longitude;
+  const latitude: number = request.body.coordinates.latitude;
+  const tags: string[] = request.body.tags;
+
+  const sortBy = 'best_match';
+  const term = 'restaurants';
+
+  let tagsString = '';
+  tags.forEach((tag: string, index: number) => {
+    tagsString = tagsString + tag.toLowerCase();
+    if (index < (tags.length - 1)) {
+      tagsString = tagsString + ',';
+    }
+  });
+
+  // retrieve yelp restaurants
+  fetchYelpBusinesses(
+    latitude,
+    longitude,
+    2500, // search radius in meters
+    sortBy,
+    term,
+    tagsString,
+    10,
+  )
+    .then((yelpRestaurantData) => {
+      response.status(201).json({
+        success: true,
+        yelpRestaurantData,
+      });
+    });
+}
 
 /*
 {{URL}}/api/v1/filteredRestaurants
