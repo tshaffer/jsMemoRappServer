@@ -217,6 +217,7 @@ export function restaurantsSearch(request: Request, response: Response, next: an
 
   console.log(request.body);
 
+  const userName: string = request.body.userName;
   const longitude: number = request.body.coordinates.longitude;
   const latitude: number = request.body.coordinates.latitude;
   const tags: string[] = request.body.tags;
@@ -248,6 +249,52 @@ export function restaurantsSearch(request: Request, response: Response, next: an
         yelpRestaurantData,
       });
     });
+
+  // retrieve memoRapp restaurants filtered by location, userName, and tags
+  /*
+[
+  {
+    '$geoNear': {
+      'near': {
+        'type': 'Point',
+        'coordinates': [
+          -122.061109, 37.397566
+        ]
+      },
+      'distanceField': 'dist.calculated',
+      'maxDistance': 10000,
+      'includeLocs': 'dist.location',
+      'spherical': true
+    }
+  }, {
+    '$project': {
+      'name': 1,
+      'restaurantName': 1,
+      'dist': 1,
+      'yelpBusinessDetails': 1,
+      'usersReviews': 1,
+      'location': 1
+    }
+  }, {
+    '$match': {
+      'usersReviews.userName': {
+        '$in': [
+          'ted', 'Lori'
+        ]
+      }
+    }
+  }, {
+    '$match': {
+      'usersReviews.tags.value': {
+        '$in': [
+          'Pizza', 'Pasta'
+        ]
+      }
+    }
+  }
+]
+  */
+
 }
 
 /*
