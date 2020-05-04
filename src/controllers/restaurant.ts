@@ -218,13 +218,13 @@ export function restaurantsSearch(request: Request, response: Response, next: an
   console.log(request.body);
 
   const userName: string = request.body.userName;
-  const longitude: number = request.body.coordinates.longitude;
-  const latitude: number = request.body.coordinates.latitude;
+
+  const location: GeoLocationSpec = request.body.location;
+  const longitude: number = location.coordinates[0];
+  const latitude: number = location.coordinates[1];
+  console.log('location');
+
   const tags: string[] = request.body.tags;
-
-  const sortBy = 'best_match';
-  const term = 'restaurants';
-
   let tagsString = '';
   tags.forEach((tag: string, index: number) => {
     tagsString = tagsString + tag.toLowerCase();
@@ -232,6 +232,9 @@ export function restaurantsSearch(request: Request, response: Response, next: an
       tagsString = tagsString + ',';
     }
   });
+
+  const sortBy = 'best_match';
+  const term = 'restaurants';
 
   // retrieve yelp restaurants
   fetchYelpBusinesses(
@@ -244,13 +247,25 @@ export function restaurantsSearch(request: Request, response: Response, next: an
     10,
   )
     .then((yelpRestaurantData) => {
-      response.status(201).json({
-        success: true,
-        yelpRestaurantData,
+
+      // retrieve memoRapp restaurants filtered by location, userName, and tags
+      const aggregateQuery = getRestaurantSearchQuery(location, userName, tags);
+
+      Restaurant.aggregate(aggregateQuery).exec((err, memoRappRestaurants) => {
+        if (err) {
+          console.log('err: ' + err);
+        } else {
+          memoRappRestaurants = filterRestaurantsByTags(memoRappRestaurants, tags);
+          response.status(201).json({
+            success: true,
+            yelpRestaurantData,
+            memoRappRestaurants,
+          });
+        }
       });
     });
 
-  // retrieve memoRapp restaurants filtered by location, userName, and tags
+
   /*
 [
   {
@@ -348,6 +363,49 @@ export function filteredRestaurants(request: Request, response: Response, next: 
     });
 }
 
+function getRestaurantSearchQuery(location: GeoLocationSpec, userName: string, tags: string[]): any {
+
+  const geoNearSpec = getGeoNearSpec(location);
+  const restaurantProjectSpec: any = getRestaurantProjectSpec();
+
+  const usersReviewsUserNameSpec: any = getUsersReviewsElemMatchSpec(userName);
+
+  // the following didn't work!!
+  // const usersReviewsTagsSpec: any = getUsersReviewsTagsElemMatchSpec(tags);
+  // const usersReviewsUserNameSpec: any = getUsersReviewsUserNameMatchSpec(userName);
+  // const usersReviewsTagsSpec: any = getUsersReviewsTagsMatchSpec(tags);
+
+  const aggregateQuery: any[] = [];
+  addQuerySpecIfNonNull(aggregateQuery, { $geoNear: geoNearSpec });
+  addQuerySpecIfNonNull(aggregateQuery, { $project: restaurantProjectSpec });
+  addQuerySpecIfNonNull(aggregateQuery, { $match: usersReviewsUserNameSpec });
+  // addQuerySpecIfNonNull(aggregateQuery, { $match: usersReviewsTagsSpec });
+  // addQuerySpecIfNonNull(aggregateQuery, { $match: usersReviewsUserNameSpec });
+  // addQuerySpecIfNonNull(aggregateQuery, { $match: usersReviewsTagsSpec });
+
+  return aggregateQuery;
+}
+
+function filterRestaurantsByTags(memoRappRestaurants: RestaurantEntity[], tags: string[]): RestaurantEntity[] {
+  const memoRappRestaurantsWithMatchingTag: RestaurantEntity[] = [];
+  
+  for (const memoRappRestaurant of memoRappRestaurants) {
+    console.log(memoRappRestaurant);
+    for (const userReviews of memoRappRestaurant.usersReviews) {
+      const reviewTagEntities = userReviews.tags;
+      const reviewTags = reviewTagEntities.map( (reviewTagEntity) => {
+        return reviewTagEntity.value;
+      });
+      const found = reviewTags.some((r) => tags.indexOf(r) >= 0);
+      if (found) {
+        memoRappRestaurantsWithMatchingTag.push(memoRappRestaurant);
+      }
+    }
+  }
+
+  return memoRappRestaurantsWithMatchingTag;
+}
+
 export function getFilteredRestaurantsQuery(filterSpec: FilterSpec): any {
 
   const geoNearSpec = getGeoNearSpec(filterSpec.location);
@@ -422,3 +480,70 @@ function getFirstProjectSpec(filterSpec: FilterSpec): any {
   return projectSpec;
 }
 
+function getRestaurantProjectSpec(): any {
+
+  const projectSpec: any = {};
+
+  projectSpec.name = 1;
+  projectSpec.restaurantName = 1;
+  projectSpec.dist = 1;
+  projectSpec.yelpBusinessDetails = 1;
+  projectSpec.usersReviews = 1;
+  projectSpec.location = 1;
+  projectSpec._id = 0;
+
+  return projectSpec;
+}
+
+function getUsersReviewsElemMatchSpec(userName: string): any {
+  const matchSpec: any = {};
+  matchSpec.usersReviews = {
+    $elemMatch: {
+      userName,
+    },
+  };
+
+  return matchSpec;
+}
+
+function getUsersReviewsTagsElemMatchSpec(tags: string[]): any {
+  const matchSpec: any = {};
+  matchSpec.usersReviews = {
+    tags: {
+      $elemMatch: {
+        value: tags[0],
+      },
+    },
+  };
+
+  return matchSpec;
+}
+
+// {
+//   tags: { $in: ['burritos'] }
+// }
+function getUsersReviewsUserNameMatchSpec(userName: string): any {
+
+  const matchSpec: any = {};
+  matchSpec.usersReviews = {
+    userName: {
+      $in: [userName],
+    },
+  };
+
+  return matchSpec;
+}
+
+function getUsersReviewsTagsMatchSpec(tags: string[]): any {
+
+  const matchSpec: any = {};
+  matchSpec.usersReviews = {
+    tags: {
+      value: {
+        $in: tags,
+      },
+    },
+  };
+
+  return matchSpec;
+}
