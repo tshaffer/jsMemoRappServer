@@ -249,7 +249,7 @@ export function restaurantsSearch(request: Request, response: Response, next: an
     .then((yelpRestaurantData) => {
 
       // retrieve memoRapp restaurants filtered by location, userName, and tags
-      const aggregateQuery = getRestaurantSearchQuery(location, userName, tags);
+      const aggregateQuery = getMemmoRappRestaurantSearchQuery(location, userName, tags);
 
       Restaurant.aggregate(aggregateQuery).exec((err, memoRappRestaurants) => {
         if (err) {
@@ -363,7 +363,7 @@ export function filteredRestaurants(request: Request, response: Response, next: 
     });
 }
 
-function getRestaurantSearchQuery(location: GeoLocationSpec, userName: string, tags: string[]): any {
+function getMemmoRappRestaurantSearchQuery(location: GeoLocationSpec, userName: string, tags: string[]): any {
 
   const geoNearSpec = getGeoNearSpec(location);
   const restaurantProjectSpec: any = getRestaurantProjectSpec();
