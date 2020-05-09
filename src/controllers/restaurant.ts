@@ -13,6 +13,7 @@ import {
   GeoLocationSpec,
   ReviewEntity,
   UserReviewsEntity,
+  YelpRestaurant,
 } from '../types';
 
 // RESTAURANTS
@@ -195,19 +196,19 @@ export function restaurantsByLocation(request: Request, response: Response, next
   const latitude: number = parseFloat(request.query.latitude);
   const longitude: number = parseFloat(request.query.longitude);
 
-  let yelpRestaurantData: any = null;
+  let yelpRestaurants: any = null;
 
   return fetchYelpBusinessByLocation(latitude, longitude, 50, 'distance', 'food')
     .then((restaurantData) => {
-      yelpRestaurantData = restaurantData;
-      console.log(yelpRestaurantData);
+      yelpRestaurants = restaurantData;
+      console.log(yelpRestaurants);
       return getMemoRappRestaurantsByLocation(latitude, longitude, 50)
         .then((memoRappRestaurantData: any) => {
           console.log(memoRappRestaurantData);
           response.status(201).json({
             success: true,
             memoRappRestaurants: memoRappRestaurantData.restaurants,
-            yelpRestaurants: yelpRestaurantData.businesses,
+            yelpRestaurants: yelpRestaurants.businesses,
           });
         });
     });
@@ -246,7 +247,9 @@ export function restaurantsSearch(request: Request, response: Response, next: an
     tagsString,
     10,
   )
-    .then((yelpRestaurantData) => {
+    .then((yelpBusinesses) => {
+
+      const yelpRestaurants: YelpRestaurant[] = yelpBusinesses.businesses;
 
       // retrieve memoRapp restaurants filtered by location, userName, and tags
       const aggregateQuery = getMemmoRappRestaurantSearchQuery(location, userName, tags);
@@ -258,7 +261,7 @@ export function restaurantsSearch(request: Request, response: Response, next: an
           memoRappRestaurants = filterRestaurantsByTags(memoRappRestaurants, tags);
           response.status(201).json({
             success: true,
-            yelpRestaurantData,
+            yelpRestaurants,
             memoRappRestaurants,
           });
         }
@@ -388,12 +391,12 @@ function getMemmoRappRestaurantSearchQuery(location: GeoLocationSpec, userName: 
 
 function filterRestaurantsByTags(memoRappRestaurants: RestaurantEntity[], tags: string[]): RestaurantEntity[] {
   const memoRappRestaurantsWithMatchingTag: RestaurantEntity[] = [];
-  
+
   for (const memoRappRestaurant of memoRappRestaurants) {
     console.log(memoRappRestaurant);
     for (const userReviews of memoRappRestaurant.usersReviews) {
       const reviewTagEntities = userReviews.tags;
-      const reviewTags = reviewTagEntities.map( (reviewTagEntity) => {
+      const reviewTags = reviewTagEntities.map((reviewTagEntity) => {
         return reviewTagEntity.value;
       });
       const found = reviewTags.some((r) => tags.indexOf(r) >= 0);
