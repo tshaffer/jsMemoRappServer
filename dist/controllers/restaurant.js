@@ -72,10 +72,52 @@ exports.createUserReviews = createUserReviews;
 function updateRestaurant(request, response, next) {
     console.log('updateRestaurant');
     console.log(request.body);
+    Restaurant_1.default.findById(request.params.id, (err, restaurant) => {
+        if (request.body._id) {
+            delete request.body._id;
+        }
+        for (const b in request.body) {
+            if (request.body.hasOwnProperty(b)) {
+                restaurant[b] = request.body[b];
+            }
+        }
+        restaurant.save();
+        response.json(restaurant);
+    });
 }
 exports.updateRestaurant = updateRestaurant;
 function addUserReview(request, response, next) {
+    const { restaurantDbId, userName, tags, date, rating, wouldReturn, comments } = request.body;
     console.log(request.body);
+    Restaurant_1.default.findById(restaurantDbId, (err, restaurant) => {
+        let matchedUsersReview = null;
+        for (const usersReview of restaurant.usersReviews) {
+            if (usersReview.userName === userName) {
+                matchedUsersReview = usersReview;
+            }
+        }
+        const review = {
+            date,
+            comments,
+            rating,
+            wouldReturn,
+        };
+        if (!lodash_1.isNil(matchedUsersReview)) {
+            matchedUsersReview.tags = tags;
+            matchedUsersReview.reviews.push(review);
+        }
+        else {
+            const userReviewEntity = {
+                userName,
+                tags,
+                reviews: [review],
+            };
+            restaurant.usersReviews.push(userReviewEntity);
+        }
+        // markModified?
+        restaurant.save();
+        response.json(restaurant);
+    });
 }
 exports.addUserReview = addUserReview;
 /*
