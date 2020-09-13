@@ -60,7 +60,15 @@ class App {
   }
 
   private config(): void {
-    const port = process.env.PORT || 8000;
+    // pre Heroku
+    // const port = process.env.PORT || 8000;
+    // this.app.set('port', port);
+
+    // for Heroku, from mrs
+    let port: any = process.env.PORT;
+    if (port === undefined || port === null || port === '') {
+      port = 8000;
+    }
     this.app.set('port', port);
   }
 }
