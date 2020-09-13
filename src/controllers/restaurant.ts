@@ -87,64 +87,10 @@ export function createUserReviews(request: Request, response: Response, next: an
 export function updateRestaurant(request: Request, response: Response, next: any) {
   console.log('updateRestaurant');
   console.log(request.body);
-  // TEDTODO - heroku debug....
-  // Restaurant.findById(request.params.id, (err, restaurant) => {
-  //   if (request.body._id) {
-  //     delete request.body._id;
-  //   }
-  //   for (const b in request.body) {
-  //     if (request.body.hasOwnProperty(b)) {
-  //       (restaurant as any)[b] = request.body[b];
-  //     }
-  //   }
-  //   restaurant.save();
-  //   response.json(restaurant);
-  // });
 }
 
 export function addUserReview(request: Request, response: Response, next: any) {
-
-  // const { restaurantDbId, userName, tags, date, rating, wouldReturn, comments } = request.body;
-
   console.log(request.body);
-
-  // TEDTODO - heroku debug....
-  // Restaurant.findById(restaurantDbId, (err, restaurant: RestaurantEntity) => {
-
-  //   let matchedUsersReview: UserReviewsEntity = null;
-
-  //   for (const usersReview of restaurant.usersReviews) {
-  //     if (usersReview.userName === userName) {
-  //       matchedUsersReview = usersReview;
-  //     }
-  //   }
-
-  //   const review: ReviewEntity = {
-  //     date,
-  //     comments,
-  //     rating,
-  //     wouldReturn,
-  //   };
-
-  //   if (!isNil(matchedUsersReview)) {
-  //     matchedUsersReview.tags = tags;
-  //     matchedUsersReview.reviews.push(review);
-  //   }
-  //   else {
-  //     const userReviewEntity: UserReviewsEntity = {
-  //       userName,
-  //       tags,
-  //       reviews: [review],
-  //     };
-  //     restaurant.usersReviews.push(userReviewEntity);
-  //   }
-
-  //   // markModified?
-  //   (restaurant as unknown as Document).save();
-  //   response.json(restaurant);
-
-  // });
-
 }
 
 /*
