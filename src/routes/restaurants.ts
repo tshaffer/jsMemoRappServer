@@ -9,7 +9,7 @@ import {
   restaurantsByLocation,
   restaurantsSearch,
 } from '../controllers/restaurant';
-import { populateDb } from '../controllers/testEndpoints';
+import { populateDb, updateYelpData } from '../controllers/testEndpoints';
 
 const restaurantsRouter = express.Router();
 
@@ -27,5 +27,6 @@ restaurantsRouter.patch('/restaurant/:id', updateRestaurant);
 // restaurantsRouter.post('restaurantReview/:restaurantId/userName/:userName', addUserReview);
 
 restaurantsRouter.post('/populateDb', populateDb);
+restaurantsRouter.post('/updateYelpData', updateYelpData);
 
 export default restaurantsRouter;

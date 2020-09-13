@@ -10,6 +10,7 @@ import {
   UserReviewsEntity,
 } from '../types/entities';
 import Restaurant from '../models/Restaurant';
+import { isArray } from 'lodash';
 
 export const createUserDocuments = (userDocuments: UserEntity[]): Promise<Document[]> => {
   return new Promise((resolve: any, reject: any) => {
@@ -92,13 +93,13 @@ export const createRestaurantDocument = (restaurantEntity: RestaurantEntity): Pr
   console.log('createRestaurantDocument');
 
   console.log(restaurantEntity);
-  
+
   return Restaurant.create(restaurantEntity)
     .then((restaurant: Document) => {
       return Promise.resolve(restaurant);
-    }).catch( (err: any) => {
-      console.log('ERROR - createRestaurantDocument: ', err);  
-});
+    }).catch((err: any) => {
+      console.log('ERROR - createRestaurantDocument: ', err);
+    });
 };
 
 export const createRestaurantDocuments = (restaurantDocuments: RestaurantEntity[]): Promise<Document[]> => {
@@ -122,7 +123,7 @@ export const createRestaurantDocuments = (restaurantDocuments: RestaurantEntity[
 };
 
 export const createRestaurantUsersReviewsDocuments = (yelpId: string, userReviews: UserReviewsEntity[]): Promise<Document> => {
-  
+
   const query = Restaurant.findOneAndUpdate(
     { 'yelpBusinessDetails.id': yelpId },
     { userReviews },
@@ -138,3 +139,17 @@ export const createRestaurantUsersReviewsDocuments = (yelpId: string, userReview
       return Promise.reject(err);
     });
 };
+
+export const updateYelpBusinessDetails = (restaurantEntity: RestaurantEntity) => {
+  Restaurant.find(
+    {
+      id: restaurantEntity.id,
+    },
+    (err, restaurantDocs: any) => {
+      if (isArray(restaurantDocs) && restaurantDocs.length === 1) {
+        const restaurant: any = restaurantDocs[0];
+        restaurant.yelpBusinessDetails = restaurantEntity.yelpBusinessDetails;
+        restaurant.save();
+      }
+    });
+}

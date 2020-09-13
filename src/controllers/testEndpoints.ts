@@ -11,6 +11,7 @@ import {
   createTagDocuments,
   createRestaurantDocuments,
   createRestaurantUsersReviewsDocuments,
+  updateYelpBusinessDetails,
 } from './dbInterface';
 
 export const populateUsers = () => {
@@ -64,7 +65,8 @@ const getAllYelpData = (yelpBusinessIds: string[]): Promise<any[]> => {
   return processNextYelpBusiness(0);
 };
 
-export const populateRestaurants = () => {
+const getRestaurants = (): RestaurantEntity[] => {
+
   const restaurants: RestaurantEntity[] = [
     {
       id: 'GHj6QfOe8278orCytIV7sA',
@@ -234,7 +236,21 @@ export const populateRestaurants = () => {
       // tags: [{ value: 'Coffee' }],
       usersReviews: [],
     },
+    {
+      id: 'EhlizSyoWmS1a9lp4wEVCQ',
+      name: 'Pompeii',
+      yelpBusinessDetails: { id: 'EhlizSyoWmS1a9lp4wEVCQ' },
+      // tags: [{ value: 'Pasta' }],
+      usersReviews: [],
+    },
   ];
+
+  return restaurants;
+};
+
+export const populateRestaurants = () => {
+
+  const restaurants: RestaurantEntity[] = getRestaurants();
 
   const yelpBusinessIds: string[] = restaurants.map((restaurant: any) => {
     return restaurant.yelpBusinessDetails.id;
@@ -882,4 +898,21 @@ export const populateDb = (request: Request, response: Response, next: any) => {
         restaurantReviews,
       });
     });
+};
+
+export const updateYelpData = () => {
+
+  const restaurants: RestaurantEntity[] = getRestaurants();
+
+  const yelpBusinessIds: string[] = restaurants.map((restaurant: any) => {
+    return restaurant.yelpBusinessDetails.id;
+  });
+
+  return getAllYelpData(yelpBusinessIds).then((yelpBusinessDetails: any[]) => {
+    for (let i = 0; i < restaurants.length; i++) {
+      restaurants[i].yelpBusinessDetails = yelpBusinessDetails[i];
+      console.log(yelpBusinessDetails[i]);
+      updateYelpBusinessDetails(restaurants[i]);
+    }
+  });
 };
