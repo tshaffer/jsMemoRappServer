@@ -7,7 +7,8 @@ import {
   yelpRestaurantsByLocation,
   filteredRestaurants,
   restaurantsByLocation,
-  restaurantsSearch,
+  restaurantsSearchByGeolocation,
+  restaurantsSearchBySearchTerm,
 } from '../controllers/restaurant';
 import { populateDb, updateYelpData } from '../controllers/testEndpoints';
 
@@ -15,7 +16,8 @@ const restaurantsRouter = express.Router();
 
 restaurantsRouter.get('/yelpRestaurants', yelpRestaurantsByLocation);
 restaurantsRouter.get('/restaurantsByLocation', restaurantsByLocation);
-restaurantsRouter.post('/restaurantsSearch', restaurantsSearch);
+restaurantsRouter.post('/restaurantsSearchByGeolocation', restaurantsSearchByGeolocation);
+restaurantsRouter.post('/restaurantsSearchBySearchTerm', restaurantsSearchBySearchTerm);
 restaurantsRouter.post('/filteredRestaurants', filteredRestaurants);
 
 restaurantsRouter.post('/restaurant', createRestaurant);

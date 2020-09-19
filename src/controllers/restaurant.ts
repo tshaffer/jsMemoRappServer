@@ -5,7 +5,8 @@ import Restaurant from '../models/Restaurant';
 import { createRestaurantDocument } from './dbInterface';
 import {
   fetchYelpBusinessByLocation,
-  fetchYelpBusinesses,
+  fetchYelpBusinessesByGeolocation,
+  fetchYelpBusinessesBySearchTerm,
 } from './yelp';
 import {
   RestaurantEntity,
@@ -214,7 +215,7 @@ export function restaurantsByLocation(request: Request, response: Response, next
     });
 }
 
-export function restaurantsSearch(request: Request, response: Response, next: any) {
+export function restaurantsSearchByGeolocation(request: Request, response: Response, next: any) {
 
   console.log(request.body);
 
@@ -238,7 +239,7 @@ export function restaurantsSearch(request: Request, response: Response, next: an
   const term = 'restaurants';
 
   // retrieve yelp restaurants
-  fetchYelpBusinesses(
+  fetchYelpBusinessesByGeolocation(
     latitude,
     longitude,
     2500, // search radius in meters
@@ -315,41 +316,71 @@ export function restaurantsSearch(request: Request, response: Response, next: an
 
 }
 
-/*
-{{URL}}/api/v1/filteredRestaurants
+export function restaurantsSearchBySearchTerm(request: Request, response: Response, next: any) {
 
-example bodies
+  console.log(request.body);
 
-{
-  "filters": {
-    "tags": [ "carnitas" ],
-    "reviewers": ["Ted", "Joel"]
+  const userName: string = request.body.userName;
+
+  const location: string = request.body.location;
+  console.log('location');
+  console.log(location);
+
+  let term: string = request.body.term;
+  console.log('term');
+  console.log(term);
+  if (term === '') {
+    term = 'restaurants';
   }
+
+  const tags: string[] = request.body.tags;
+  let tagsString = '';
+  tags.forEach((tag: string, index: number) => {
+    tagsString = tagsString + tag.toLowerCase();
+    if (index < (tags.length - 1)) {
+      tagsString = tagsString + ',';
+    }
+  });
+
+  const sortBy = 'best_match';
+
+  // retrieve yelp restaurants
+  fetchYelpBusinessesBySearchTerm(
+    location,
+    term,
+    2500, // search radius in meters
+    sortBy,
+    tagsString,
+    10,
+  )
+    .then((yelpBusinesses) => {
+
+      const yelpRestaurants: YelpRestaurant[] = yelpBusinesses.businesses;
+
+      response.status(201).json({
+        success: true,
+        yelpRestaurants,
+        memoRappRestaurants: [],
+      });
+
+      // retrieve memoRapp restaurants filtered by location, userName, and tags
+      // const aggregateQuery = getMemoRappRestaurantSearchQuery(location, userName, tags);
+
+      // Restaurant.aggregate(aggregateQuery).exec((err, memoRappRestaurants) => {
+      //   if (err) {
+      //     console.log('err: ' + err);
+      //   } else {
+      //     memoRappRestaurants = filterRestaurantsByTags(memoRappRestaurants, tags);
+      //     response.status(201).json({
+      //       success: true,
+      //       yelpRestaurants,
+      //       memoRappRestaurants,
+      //     });
+      //   }
+      // });
+    });
 }
 
-{
-	"filterSpec": {
-		"location": {
-			"coordinates": [ -122.147944, 37.392333  ],
-			"maxDistance": 40000
-		},
-		"tags": [ "burritos", "taqueria" ]
-	}
-}
-
-{
-	"filterSpec": {
-    "tags": [ "burritos" ],
-    "reviewers": ["Ted"]
-}
-
-also:
-- wouldReturn
-- visitReviews
---    date
---    rating
-- anything from yelpBusinessDetails?
-*/
 export function filteredRestaurants(request: Request, response: Response, next: any) {
 
   const filteredRestaurantsQuery: any = getFilteredRestaurantsQuery(request.body.filterSpec);

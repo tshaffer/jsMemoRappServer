@@ -60,7 +60,7 @@ export function fetchYelpBusinessByLocation(
   return fetchYelpData(endPoint);
 }
 
-export function fetchYelpBusinesses(
+export function fetchYelpBusinessesByGeolocation(
   latitude: number,
   longitude: number,
   radius: number,
@@ -77,5 +77,27 @@ export function fetchYelpBusinesses(
     + '&term=' + searchTerm
     + '&categories=' + categories
     + '&limit=' + limit.toString();
+  console.log('fetchYelpBusinessesByGeolocation endPoint');
+  console.log(endPoint);
+  return fetchYelpData(endPoint);
+}
+
+export function fetchYelpBusinessesBySearchTerm(
+  location: string,
+  term: string,
+  radius: number,
+  sortBy: string,
+  categories: string,
+  limit: number,
+): Promise<any> {
+  const endPoint: string = 'businesses/search'
+    + '?term=' + encodeURIComponent(term)
+    + '&location=' + encodeURIComponent(location)
+    + '&radius=' + radius.toString()
+    + '&sort_by=' + sortBy
+    + '&categories=' + categories
+    + '&limit=' + limit.toString();
+  console.log('fetchYelpBusinessesBySearchTerm endPoint');
+  console.log(endPoint);
   return fetchYelpData(endPoint);
 }
