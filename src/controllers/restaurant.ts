@@ -1,10 +1,11 @@
-import { isNil } from 'lodash';
+import { isNil, isString } from 'lodash';
 import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 import Restaurant from '../models/Restaurant';
 import { createRestaurantDocument } from './dbInterface';
 import {
-  fetchYelpBusinessByLocation,
+  fetchYelpBusinessByGeoLocation,
+  fetchYelpBusinessBySearchTerm,
   fetchYelpBusinessesByGeolocation,
   fetchYelpBusinessesBySearchTerm,
 } from './yelp';
@@ -158,7 +159,7 @@ export function yelpRestaurantsByLocation(request: Request, response: Response, 
   console.log('latitude: ', latitude);
   console.log('longitude: ', longitude);
 
-  return fetchYelpBusinessByLocation(latitude, longitude, 50, 'distance', 'food').then((responseData: any) => {
+  return fetchYelpBusinessByGeoLocation(latitude, longitude, 50, 'distance', 'food').then((responseData: any) => {
     response.json(responseData);
   });
 }
@@ -192,14 +193,14 @@ function getMemoRappRestaurantsByLocation(
   });
 }
 
-export function restaurantsByLocation(request: Request, response: Response, next: any) {
+export function restaurantsByGeoLocation(request: Request, response: Response, next: any) {
 
   const latitude: number = parseFloat(request.query.latitude);
   const longitude: number = parseFloat(request.query.longitude);
 
   let yelpRestaurants: any = null;
 
-  return fetchYelpBusinessByLocation(latitude, longitude, 50, 'distance', 'food')
+  return fetchYelpBusinessByGeoLocation(latitude, longitude, 50, 'distance', 'food')
     .then((restaurantData) => {
       yelpRestaurants = restaurantData;
       console.log(yelpRestaurants);
@@ -214,6 +215,47 @@ export function restaurantsByLocation(request: Request, response: Response, next
         });
     });
 }
+
+export function restaurantsBySearchTerm(request: Request, response: Response, next: any) {
+
+  console.log('restaurantsBySearchTerm');
+  console.log(request.query);
+
+  const location: string = request.query.location;
+  console.log('location');
+  console.log(location);
+
+  let term: string = 'restaurants';
+  if (isString(request.query.term) && request.query.term.length > 0) {
+    term = request.query.term;
+  }
+
+  let yelpRestaurants: any = null;
+
+  // return fetchYelpBusinessBySearchTerm(location, term, 50, 'distance')
+  return fetchYelpBusinessBySearchTerm(location, term, 2500, 'best_match')
+    .then((restaurantData) => {
+      yelpRestaurants = restaurantData;
+      console.log(yelpRestaurants);
+      response.status(201).json({
+        success: true,
+        memoRappRestaurants: [],
+        yelpRestaurants: yelpRestaurants.businesses,
+      });
+      // return getMemoRappRestaurantsByLocation(latitude, longitude, 50)
+      //   .then((memoRappRestaurantData: any) => {
+      //     console.log(memoRappRestaurantData);
+      //     response.status(201).json({
+      //       success: true,
+      //       memoRappRestaurants: memoRappRestaurantData.restaurants,
+      //       yelpRestaurants: yelpRestaurants.businesses,
+      //     });
+      //   });
+    });
+}
+
+// businesses/search?term=restaurants&location=cupertino&radius=50&sort_by=distance
+// businesses/search?term=restaurants&location=cupertino&radius=2500&sort_by=best_match&categories=&limit=10
 
 export function restaurantsSearchByGeolocation(request: Request, response: Response, next: any) {
 

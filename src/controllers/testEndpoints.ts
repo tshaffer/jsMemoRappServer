@@ -2,7 +2,7 @@ import { isNil } from 'lodash';
 import { Request, Response } from 'express';
 import Restaurant from '../models/Restaurant';
 import User from '../models/User';
-import { fetchYelpBusinessDetails, fetchYelpBusinessByLocation } from './yelp';
+import { fetchYelpBusinessDetails, fetchYelpBusinessByGeoLocation } from './yelp';
 import { Document } from 'mongoose';
 
 import { TagEntity, UserEntity, RestaurantEntity } from '../types';

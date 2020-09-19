@@ -42,7 +42,7 @@ export function fetchYelpBusinessDetails(yelpId: string): Promise<any> {
   return fetchYelpData(endPoint);
 }
 
-export function fetchYelpBusinessByLocation(
+export function fetchYelpBusinessByGeoLocation(
   latitude: number,
   longitude: number,
   radius: number,
@@ -51,12 +51,31 @@ export function fetchYelpBusinessByLocation(
 ): Promise<any> {
   // const endPoint: string = 'businesses/search?latitude=37.380421&longitude=-122.115631';
   // const endPoint: string = 'businesses/search?latitude=' + latitude.toString() + '&longitude=' + longitude.toString();
+  console.log('fetchYelpBusinessByGeoLocation');
   const endPoint: string = 'businesses/search'
     + '?latitude=' + latitude.toString()
     + '&longitude=' + longitude.toString()
     + '&radius=' + radius.toString()
     + '&sort_by=' + sortBy
     + '&term=' + searchTerm;
+  console.log('fetchYelpBusinessByGeoLocation');
+  console.log(endPoint);
+  return fetchYelpData(endPoint);
+}
+
+export function fetchYelpBusinessBySearchTerm(
+  location: string,
+  term: string,
+  radius: number,
+  sortBy: string,
+): Promise<any> {
+  const endPoint: string = 'businesses/search'
+    + '?term=' + encodeURIComponent(term)
+    + '&location=' + encodeURIComponent(location)
+    + '&radius=' + radius.toString()
+    + '&sort_by=' + sortBy;
+  console.log('fetchYelpBusinessBySearchTerm');
+  console.log(endPoint);
   return fetchYelpData(endPoint);
 }
 
