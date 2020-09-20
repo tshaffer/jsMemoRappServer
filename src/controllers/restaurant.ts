@@ -17,6 +17,7 @@ import {
   UserReviewsEntity,
   YelpRestaurant,
   YelpSearchRegion,
+  YelpBusinessSearchResults,
 } from '../types';
 
 // RESTAURANTS
@@ -32,11 +33,6 @@ import {
         "carnitas"
       ]
     }
-
-    yelpSearchRegion:
-    { center: { longitude: -122.115733, latitude: 37.380557 } }
-    { center: { longitude: -122.04299926757812, latitude: 37.32210920065857 } }
-    { center: { longitude: -73.99429321289062, latitude: 40.70544486444615 } }
 */
 export function createRestaurant(request: Request, response: Response, next: any) {
 
@@ -165,7 +161,7 @@ export function yelpRestaurantsByLocation(request: Request, response: Response, 
   console.log('latitude: ', latitude);
   console.log('longitude: ', longitude);
 
-  return fetchYelpBusinessByGeoLocation(latitude, longitude, 50, 'distance', 'food').then((responseData: any) => {
+  return fetchYelpBusinessByGeoLocation(latitude, longitude, 50, 'distance', 'food').then((responseData: YelpBusinessSearchResults) => {
     response.json(responseData);
   });
 }
@@ -199,6 +195,7 @@ function getMemoRappRestaurantsByLocation(
   });
 }
 
+// Add Restaurant Review -> Current Location
 export function restaurantsByGeoLocation(request: Request, response: Response, next: any) {
 
   const latitude: number = parseFloat(request.query.latitude);
@@ -207,7 +204,7 @@ export function restaurantsByGeoLocation(request: Request, response: Response, n
   let yelpRestaurants: any = null;
 
   return fetchYelpBusinessByGeoLocation(latitude, longitude, 50, 'distance', 'food')
-    .then((restaurantData) => {
+    .then((restaurantData: YelpBusinessSearchResults) => {
       yelpRestaurants = restaurantData;
       console.log(yelpRestaurants);
       return getMemoRappRestaurantsByLocation(latitude, longitude, 50)
@@ -222,6 +219,7 @@ export function restaurantsByGeoLocation(request: Request, response: Response, n
     });
 }
 
+// Add Restaurant Review -> Specific Location
 export function restaurantsBySearchTerm(request: Request, response: Response, next: any) {
 
   console.log('restaurantsBySearchTerm');
@@ -236,27 +234,34 @@ export function restaurantsBySearchTerm(request: Request, response: Response, ne
     term = request.query.term;
   }
 
-  let yelpRestaurants: any = null;
+  // let yelpRestaurants: any = null;
 
   // return fetchYelpBusinessBySearchTerm(location, term, 50, 'distance')
   return fetchYelpBusinessBySearchTerm(location, term, 2500, 'best_match')
-    .then((restaurantData) => {
-      yelpRestaurants = restaurantData;
-      console.log(yelpRestaurants);
-      response.status(201).json({
-        success: true,
-        memoRappRestaurants: [],
-        yelpRestaurants: yelpRestaurants.businesses,
-      });
-      // return getMemoRappRestaurantsByLocation(latitude, longitude, 50)
-      //   .then((memoRappRestaurantData: any) => {
-      //     console.log(memoRappRestaurantData);
-      //     response.status(201).json({
-      //       success: true,
-      //       memoRappRestaurants: memoRappRestaurantData.restaurants,
-      //       yelpRestaurants: yelpRestaurants.businesses,
-      //     });
-      //   });
+    .then((yelpBusinesses: YelpBusinessSearchResults) => {
+      // const yelpSearchRegion: YelpSearchRegion = yelpBusinesses.region;
+      console.log(yelpBusinesses);
+      // response.status(201).json({
+      //   success: true,
+      //   memoRappRestaurants: [],
+      //   yelpRestaurants: yelpBusinesses.businesses,
+      // });
+      const yelpSearchRegion: YelpSearchRegion = yelpBusinesses.region;
+      const searchLocation: GeoLocationSpec = {
+        coordinates: [yelpSearchRegion.center.longitude, yelpSearchRegion.center.latitude],
+        maxDistance: 2500,
+      };
+      // const aggregateQuery = getMemoRappRestaurantSearchQuery(searchLocation, userName, tags);
+
+      return getMemoRappRestaurantsByLocation(yelpSearchRegion.center.latitude, yelpSearchRegion.center.longitude, 2500)
+        .then((memoRappRestaurantData: any) => {
+          console.log(memoRappRestaurantData);
+          response.status(201).json({
+            success: true,
+            memoRappRestaurants: memoRappRestaurantData.restaurants,
+            yelpRestaurants: yelpBusinesses.businesses,
+          });
+        });
     });
 }
 
@@ -296,14 +301,9 @@ export function restaurantsSearchByGeolocation(request: Request, response: Respo
     tagsString,
     10,
   )
-    .then((yelpBusinesses) => {
+    .then((yelpBusinesses: YelpBusinessSearchResults) => {
 
       const yelpRestaurants: YelpRestaurant[] = yelpBusinesses.businesses;
-      const yelpSearchRegion: YelpSearchRegion = yelpBusinesses.region;
-      console.log('yelpSearchRegion');
-      console.log(yelpSearchRegion);
-      console.log(yelpSearchRegion.center.latitude);
-      console.log(yelpSearchRegion.center.longitude);
 
       // retrieve memoRapp restaurants filtered by location, userName, and tags
       const aggregateQuery = getMemoRappRestaurantSearchQuery(location, userName, tags);
@@ -406,20 +406,10 @@ export function restaurantsSearchBySearchTerm(request: Request, response: Respon
     tagsString,
     10,
   )
-    .then((yelpBusinesses) => {
+    .then((yelpBusinesses: YelpBusinessSearchResults) => {
 
       const yelpRestaurants: YelpRestaurant[] = yelpBusinesses.businesses;
       const yelpSearchRegion: YelpSearchRegion = yelpBusinesses.region;
-      console.log('yelpSearchRegion');
-      console.log(yelpSearchRegion);
-      console.log(yelpSearchRegion.center.latitude);
-      console.log(yelpSearchRegion.center.longitude);
-
-      // response.status(201).json({
-      //   success: true,
-      //   yelpRestaurants,
-      //   memoRappRestaurants: [],
-      // });
 
       // retrieve memoRapp restaurants filtered by location, userName, and tags
       const searchLocation: GeoLocationSpec = {

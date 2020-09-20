@@ -44,6 +44,14 @@ export interface LatLongPoint {
   longitude: number;
 }
 
+// https://www.yelp.com/developers/documentation/v3/business_search
+// Response Body
+export interface YelpBusinessSearchResults {
+  total: number;
+  businesses: any[];
+  region: YelpSearchRegion;
+}
+
 export interface YelpSearchRegion {
   center: LatLongPoint;
 }

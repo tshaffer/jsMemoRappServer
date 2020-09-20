@@ -1,4 +1,5 @@
 import https from 'https';
+import { YelpBusinessSearchResults } from '../types/entities';
 
 // GET
 // https://api.yelp.com/v3/businesses/a8gk25_MTKdtoOwBsiraDQ
@@ -48,7 +49,7 @@ export function fetchYelpBusinessByGeoLocation(
   radius: number,
   sortBy: string,
   searchTerm: string,
-): Promise<any> {
+): Promise<YelpBusinessSearchResults> {
   // const endPoint: string = 'businesses/search?latitude=37.380421&longitude=-122.115631';
   // const endPoint: string = 'businesses/search?latitude=' + latitude.toString() + '&longitude=' + longitude.toString();
   console.log('fetchYelpBusinessByGeoLocation');
@@ -68,7 +69,7 @@ export function fetchYelpBusinessBySearchTerm(
   term: string,
   radius: number,
   sortBy: string,
-): Promise<any> {
+): Promise<YelpBusinessSearchResults> {
   const endPoint: string = 'businesses/search'
     + '?term=' + encodeURIComponent(term)
     + '&location=' + encodeURIComponent(location)
@@ -87,7 +88,7 @@ export function fetchYelpBusinessesByGeolocation(
   searchTerm: string,
   categories: string,
   limit: number,
-): Promise<any> {
+): Promise<YelpBusinessSearchResults> {
   const endPoint: string = 'businesses/search'
     + '?latitude=' + latitude.toString()
     + '&longitude=' + longitude.toString()
@@ -108,7 +109,7 @@ export function fetchYelpBusinessesBySearchTerm(
   sortBy: string,
   categories: string,
   limit: number,
-): Promise<any> {
+): Promise<YelpBusinessSearchResults> {
   const endPoint: string = 'businesses/search'
     + '?term=' + encodeURIComponent(term)
     + '&location=' + encodeURIComponent(location)
