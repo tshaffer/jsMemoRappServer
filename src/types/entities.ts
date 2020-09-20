@@ -44,6 +44,10 @@ export interface LatLongPoint {
   longitude: number;
 }
 
+export interface YelpSearchRegion {
+  center: LatLongPoint;
+}
+
 export interface YelpRestaurant {
   id: string;
   name: string;

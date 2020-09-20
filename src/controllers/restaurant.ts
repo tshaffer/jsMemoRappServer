@@ -16,6 +16,7 @@ import {
   ReviewEntity,
   UserReviewsEntity,
   YelpRestaurant,
+  YelpSearchRegion,
 } from '../types';
 
 // RESTAURANTS
@@ -31,6 +32,11 @@ import {
         "carnitas"
       ]
     }
+
+    yelpSearchRegion:
+    { center: { longitude: -122.115733, latitude: 37.380557 } }
+    { center: { longitude: -122.04299926757812, latitude: 37.32210920065857 } }
+    { center: { longitude: -73.99429321289062, latitude: 40.70544486444615 } }
 */
 export function createRestaurant(request: Request, response: Response, next: any) {
 
@@ -293,6 +299,11 @@ export function restaurantsSearchByGeolocation(request: Request, response: Respo
     .then((yelpBusinesses) => {
 
       const yelpRestaurants: YelpRestaurant[] = yelpBusinesses.businesses;
+      const yelpSearchRegion: YelpSearchRegion = yelpBusinesses.region;
+      console.log('yelpSearchRegion');
+      console.log(yelpSearchRegion);
+      console.log(yelpSearchRegion.center.latitude);
+      console.log(yelpSearchRegion.center.longitude);
 
       // retrieve memoRapp restaurants filtered by location, userName, and tags
       const aggregateQuery = getMemoRappRestaurantSearchQuery(location, userName, tags);
@@ -398,28 +409,37 @@ export function restaurantsSearchBySearchTerm(request: Request, response: Respon
     .then((yelpBusinesses) => {
 
       const yelpRestaurants: YelpRestaurant[] = yelpBusinesses.businesses;
+      const yelpSearchRegion: YelpSearchRegion = yelpBusinesses.region;
+      console.log('yelpSearchRegion');
+      console.log(yelpSearchRegion);
+      console.log(yelpSearchRegion.center.latitude);
+      console.log(yelpSearchRegion.center.longitude);
 
-      response.status(201).json({
-        success: true,
-        yelpRestaurants,
-        memoRappRestaurants: [],
-      });
+      // response.status(201).json({
+      //   success: true,
+      //   yelpRestaurants,
+      //   memoRappRestaurants: [],
+      // });
 
       // retrieve memoRapp restaurants filtered by location, userName, and tags
-      // const aggregateQuery = getMemoRappRestaurantSearchQuery(location, userName, tags);
+      const searchLocation: GeoLocationSpec = {
+        coordinates: [yelpSearchRegion.center.longitude, yelpSearchRegion.center.latitude],
+        maxDistance: 2500,
+      };
+      const aggregateQuery = getMemoRappRestaurantSearchQuery(searchLocation, userName, tags);
 
-      // Restaurant.aggregate(aggregateQuery).exec((err, memoRappRestaurants) => {
-      //   if (err) {
-      //     console.log('err: ' + err);
-      //   } else {
-      //     memoRappRestaurants = filterRestaurantsByTags(memoRappRestaurants, tags);
-      //     response.status(201).json({
-      //       success: true,
-      //       yelpRestaurants,
-      //       memoRappRestaurants,
-      //     });
-      //   }
-      // });
+      Restaurant.aggregate(aggregateQuery).exec((err, memoRappRestaurants) => {
+        if (err) {
+          console.log('err: ' + err);
+        } else {
+          memoRappRestaurants = filterRestaurantsByTags(memoRappRestaurants, tags);
+          response.status(201).json({
+            success: true,
+            yelpRestaurants,
+            memoRappRestaurants,
+          });
+        }
+      });
     });
 }
 
@@ -473,7 +493,7 @@ function filterRestaurantsByTags(memoRappRestaurants: RestaurantEntity[], tags: 
         return reviewTagEntity.value;
       });
       const found = reviewTags.some((r) => tags.indexOf(r) >= 0);
-      if (found) {
+      if (found || tags.length === 0) {
         memoRappRestaurantsWithMatchingTag.push(memoRappRestaurant);
       }
     }

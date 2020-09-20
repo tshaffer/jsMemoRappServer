@@ -8,6 +8,6 @@ export interface FilterSpec {
 }
 
 export interface GeoLocationSpec {
-  coordinates: number[];
+  coordinates: number[];  // Array of Longitude, then Latitude numbers
   maxDistance: number;
 }
