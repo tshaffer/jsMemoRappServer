@@ -40,19 +40,33 @@ function fetchYelpBusinessDetails(yelpId) {
     return fetchYelpData(endPoint);
 }
 exports.fetchYelpBusinessDetails = fetchYelpBusinessDetails;
-function fetchYelpBusinessByLocation(latitude, longitude, radius, sortBy, searchTerm) {
+function fetchYelpBusinessByGeoLocation(latitude, longitude, radius, sortBy, searchTerm) {
     // const endPoint: string = 'businesses/search?latitude=37.380421&longitude=-122.115631';
     // const endPoint: string = 'businesses/search?latitude=' + latitude.toString() + '&longitude=' + longitude.toString();
+    console.log('fetchYelpBusinessByGeoLocation');
     const endPoint = 'businesses/search'
         + '?latitude=' + latitude.toString()
         + '&longitude=' + longitude.toString()
         + '&radius=' + radius.toString()
         + '&sort_by=' + sortBy
         + '&term=' + searchTerm;
+    console.log('fetchYelpBusinessByGeoLocation');
+    console.log(endPoint);
     return fetchYelpData(endPoint);
 }
-exports.fetchYelpBusinessByLocation = fetchYelpBusinessByLocation;
-function fetchYelpBusinesses(latitude, longitude, radius, sortBy, searchTerm, categories, limit) {
+exports.fetchYelpBusinessByGeoLocation = fetchYelpBusinessByGeoLocation;
+function fetchYelpBusinessBySearchTerm(location, term, radius, sortBy) {
+    const endPoint = 'businesses/search'
+        + '?term=' + encodeURIComponent(term)
+        + '&location=' + encodeURIComponent(location)
+        + '&radius=' + radius.toString()
+        + '&sort_by=' + sortBy;
+    console.log('fetchYelpBusinessBySearchTerm');
+    console.log(endPoint);
+    return fetchYelpData(endPoint);
+}
+exports.fetchYelpBusinessBySearchTerm = fetchYelpBusinessBySearchTerm;
+function fetchYelpBusinessesByGeolocation(latitude, longitude, radius, sortBy, searchTerm, categories, limit) {
     const endPoint = 'businesses/search'
         + '?latitude=' + latitude.toString()
         + '&longitude=' + longitude.toString()
@@ -61,7 +75,22 @@ function fetchYelpBusinesses(latitude, longitude, radius, sortBy, searchTerm, ca
         + '&term=' + searchTerm
         + '&categories=' + categories
         + '&limit=' + limit.toString();
+    console.log('fetchYelpBusinessesByGeolocation endPoint');
+    console.log(endPoint);
     return fetchYelpData(endPoint);
 }
-exports.fetchYelpBusinesses = fetchYelpBusinesses;
+exports.fetchYelpBusinessesByGeolocation = fetchYelpBusinessesByGeolocation;
+function fetchYelpBusinessesBySearchTerm(location, term, radius, sortBy, categories, limit) {
+    const endPoint = 'businesses/search'
+        + '?term=' + encodeURIComponent(term)
+        + '&location=' + encodeURIComponent(location)
+        + '&radius=' + radius.toString()
+        + '&sort_by=' + sortBy
+        + '&categories=' + categories
+        + '&limit=' + limit.toString();
+    console.log('fetchYelpBusinessesBySearchTerm endPoint');
+    console.log(endPoint);
+    return fetchYelpData(endPoint);
+}
+exports.fetchYelpBusinessesBySearchTerm = fetchYelpBusinessesBySearchTerm;
 //# sourceMappingURL=yelp.js.map

@@ -129,7 +129,7 @@ function yelpRestaurantsByLocation(request, response, next) {
     const longitude = parseFloat(request.query.longitude);
     console.log('latitude: ', latitude);
     console.log('longitude: ', longitude);
-    return yelp_1.fetchYelpBusinessByLocation(latitude, longitude, 50, 'distance', 'food').then((responseData) => {
+    return yelp_1.fetchYelpBusinessByGeoLocation(latitude, longitude, 50, 'distance', 'food').then((responseData) => {
         response.json(responseData);
     });
 }
@@ -155,11 +155,12 @@ function getMemoRappRestaurantsByLocation(latitude, longitude, radius) {
         });
     });
 }
-function restaurantsByLocation(request, response, next) {
+// Add Restaurant Review -> Current Location
+function restaurantsByGeoLocation(request, response, next) {
     const latitude = parseFloat(request.query.latitude);
     const longitude = parseFloat(request.query.longitude);
     let yelpRestaurants = null;
-    return yelp_1.fetchYelpBusinessByLocation(latitude, longitude, 50, 'distance', 'food')
+    return yelp_1.fetchYelpBusinessByGeoLocation(latitude, longitude, 50, 'distance', 'food')
         .then((restaurantData) => {
         yelpRestaurants = restaurantData;
         console.log(yelpRestaurants);
@@ -174,8 +175,50 @@ function restaurantsByLocation(request, response, next) {
         });
     });
 }
-exports.restaurantsByLocation = restaurantsByLocation;
-function restaurantsSearch(request, response, next) {
+exports.restaurantsByGeoLocation = restaurantsByGeoLocation;
+// Add Restaurant Review -> Specific Location
+function restaurantsBySearchTerm(request, response, next) {
+    console.log('restaurantsBySearchTerm');
+    console.log(request.query);
+    const location = request.query.location;
+    console.log('location');
+    console.log(location);
+    let term = 'restaurants';
+    if (lodash_1.isString(request.query.term) && request.query.term.length > 0) {
+        term = request.query.term;
+    }
+    // let yelpRestaurants: any = null;
+    // return fetchYelpBusinessBySearchTerm(location, term, 50, 'distance')
+    return yelp_1.fetchYelpBusinessBySearchTerm(location, term, 2500, 'best_match')
+        .then((yelpBusinesses) => {
+        // const yelpSearchRegion: YelpSearchRegion = yelpBusinesses.region;
+        console.log(yelpBusinesses);
+        // response.status(201).json({
+        //   success: true,
+        //   memoRappRestaurants: [],
+        //   yelpRestaurants: yelpBusinesses.businesses,
+        // });
+        const yelpSearchRegion = yelpBusinesses.region;
+        const searchLocation = {
+            coordinates: [yelpSearchRegion.center.longitude, yelpSearchRegion.center.latitude],
+            maxDistance: 2500,
+        };
+        // const aggregateQuery = getMemoRappRestaurantSearchQuery(searchLocation, userName, tags);
+        return getMemoRappRestaurantsByLocation(yelpSearchRegion.center.latitude, yelpSearchRegion.center.longitude, 2500)
+            .then((memoRappRestaurantData) => {
+            console.log(memoRappRestaurantData);
+            response.status(201).json({
+                success: true,
+                memoRappRestaurants: memoRappRestaurantData.restaurants,
+                yelpRestaurants: yelpBusinesses.businesses,
+            });
+        });
+    });
+}
+exports.restaurantsBySearchTerm = restaurantsBySearchTerm;
+// businesses/search?term=restaurants&location=cupertino&radius=50&sort_by=distance
+// businesses/search?term=restaurants&location=cupertino&radius=2500&sort_by=best_match&categories=&limit=10
+function restaurantsSearchByGeolocation(request, response, next) {
     console.log(request.body);
     const userName = request.body.userName;
     const location = request.body.location;
@@ -193,7 +236,7 @@ function restaurantsSearch(request, response, next) {
     const sortBy = 'best_match';
     const term = 'restaurants';
     // retrieve yelp restaurants
-    yelp_1.fetchYelpBusinesses(latitude, longitude, 2500, // search radius in meters
+    yelp_1.fetchYelpBusinessesByGeolocation(latitude, longitude, 2500, // search radius in meters
     sortBy, term, tagsString, 10)
         .then((yelpBusinesses) => {
         const yelpRestaurants = yelpBusinesses.businesses;
@@ -257,42 +300,56 @@ function restaurantsSearch(request, response, next) {
   ]
     */
 }
-exports.restaurantsSearch = restaurantsSearch;
-/*
-{{URL}}/api/v1/filteredRestaurants
-
-example bodies
-
-{
-  "filters": {
-    "tags": [ "carnitas" ],
-    "reviewers": ["Ted", "Joel"]
-  }
-}
-
-{
-    "filterSpec": {
-        "location": {
-            "coordinates": [ -122.147944, 37.392333  ],
-            "maxDistance": 40000
-        },
-        "tags": [ "burritos", "taqueria" ]
+exports.restaurantsSearchByGeolocation = restaurantsSearchByGeolocation;
+function restaurantsSearchBySearchTerm(request, response, next) {
+    console.log(request.body);
+    const userName = request.body.userName;
+    const location = request.body.location;
+    console.log('location');
+    console.log(location);
+    let term = request.body.term;
+    console.log('term');
+    console.log(term);
+    if (term === '') {
+        term = 'restaurants';
     }
+    const tags = request.body.tags;
+    let tagsString = '';
+    tags.forEach((tag, index) => {
+        tagsString = tagsString + tag.toLowerCase();
+        if (index < (tags.length - 1)) {
+            tagsString = tagsString + ',';
+        }
+    });
+    const sortBy = 'best_match';
+    // retrieve yelp restaurants
+    yelp_1.fetchYelpBusinessesBySearchTerm(location, term, 2500, // search radius in meters
+    sortBy, tagsString, 10)
+        .then((yelpBusinesses) => {
+        const yelpRestaurants = yelpBusinesses.businesses;
+        const yelpSearchRegion = yelpBusinesses.region;
+        // retrieve memoRapp restaurants filtered by location, userName, and tags
+        const searchLocation = {
+            coordinates: [yelpSearchRegion.center.longitude, yelpSearchRegion.center.latitude],
+            maxDistance: 2500,
+        };
+        const aggregateQuery = getMemoRappRestaurantSearchQuery(searchLocation, userName, tags);
+        Restaurant_1.default.aggregate(aggregateQuery).exec((err, memoRappRestaurants) => {
+            if (err) {
+                console.log('err: ' + err);
+            }
+            else {
+                memoRappRestaurants = filterRestaurantsByTags(memoRappRestaurants, tags);
+                response.status(201).json({
+                    success: true,
+                    yelpRestaurants,
+                    memoRappRestaurants,
+                });
+            }
+        });
+    });
 }
-
-{
-    "filterSpec": {
-    "tags": [ "burritos" ],
-    "reviewers": ["Ted"]
-}
-
-also:
-- wouldReturn
-- visitReviews
---    date
---    rating
-- anything from yelpBusinessDetails?
-*/
+exports.restaurantsSearchBySearchTerm = restaurantsSearchBySearchTerm;
 function filteredRestaurants(request, response, next) {
     const filteredRestaurantsQuery = getFilteredRestaurantsQuery(request.body.filterSpec);
     Restaurant_1.default.aggregate(filteredRestaurantsQuery)
@@ -334,7 +391,7 @@ function filterRestaurantsByTags(memoRappRestaurants, tags) {
                 return reviewTagEntity.value;
             });
             const found = reviewTags.some((r) => tags.indexOf(r) >= 0);
-            if (found) {
+            if (found || tags.length === 0) {
                 memoRappRestaurantsWithMatchingTag.push(memoRappRestaurant);
             }
         }
